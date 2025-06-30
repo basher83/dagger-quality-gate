@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # Enable version updates for Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Ignore the example repository with intentionally vulnerable dependencies
+    ignore:
+      - dependency-name: "*"
+        # Ignore all dependencies in the examples directory
+        # This directory contains intentionally vulnerable code for testing
+        directory: "/examples/sample-repo/"
+    open-pull-requests-limit: 10
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
