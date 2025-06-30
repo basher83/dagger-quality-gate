@@ -3,6 +3,7 @@
 from dagger import Client, Directory
 from config import CheckConfig
 from main import CheckResult
+from output_parser import parse_output
 
 
 async def run_terraform_check(
@@ -51,11 +52,22 @@ async def _run_terraform_fmt(
         try:
             output = await result.stdout()
             await result.exit_code()  # Will raise if non-zero
-            return CheckResult(
-                "terraform",
-                True,
-                output=output or "All Terraform files properly formatted",
-            )
+            parsed = parse_output("terraform", output)
+            if parsed:
+                return CheckResult(
+                    "terraform",
+                    True,
+                    output=output or "All Terraform files properly formatted",
+                    issues=parsed.issues,
+                    fix_command=parsed.fix_command,
+                    summary=parsed.summary,
+                )
+            else:
+                return CheckResult(
+                    "terraform",
+                    True,
+                    output=output or "All Terraform files properly formatted",
+                )
         except Exception:
             # Get list of files that need formatting
             list_cmd = ["terraform", "fmt", "-check", "-recursive", "-list=true"]
@@ -66,7 +78,19 @@ async def _run_terraform_fmt(
             else:
                 error_msg = "Terraform formatting check failed"
 
-            return CheckResult("terraform", False, output=stdout, error=error_msg)
+            parsed = parse_output("terraform", stdout)
+            if parsed:
+                return CheckResult(
+                    "terraform",
+                    False,
+                    output=stdout,
+                    error=error_msg,
+                    issues=parsed.issues,
+                    fix_command=parsed.fix_command,
+                    summary=parsed.summary,
+                )
+            else:
+                return CheckResult("terraform", False, output=stdout, error=error_msg)
 
     except Exception as e:
         return CheckResult("terraform", False, error=str(e))
@@ -107,7 +131,18 @@ async def _run_tflint(
         try:
             output = await result.stdout()
             await result.exit_code()  # Will raise if non-zero
-            return CheckResult("tflint", True, output=output or "No issues found")
+            parsed = parse_output("tflint", output)
+            if parsed:
+                return CheckResult(
+                    "tflint",
+                    True,
+                    output=output or "No issues found",
+                    issues=parsed.issues,
+                    fix_command=parsed.fix_command,
+                    summary=parsed.summary,
+                )
+            else:
+                return CheckResult("tflint", True, output=output or "No issues found")
         except Exception:
             # Get output for error details
             stdout = await container.with_exec(cmd).stdout()
@@ -115,7 +150,19 @@ async def _run_tflint(
 
             error_output = stderr or stdout or "TFLint found issues"
 
-            return CheckResult("tflint", False, output=stdout, error=error_output)
+            parsed = parse_output("tflint", stdout, stderr)
+            if parsed:
+                return CheckResult(
+                    "tflint",
+                    False,
+                    output=stdout,
+                    error=error_output,
+                    issues=parsed.issues,
+                    fix_command=parsed.fix_command,
+                    summary=parsed.summary,
+                )
+            else:
+                return CheckResult("tflint", False, output=stdout, error=error_output)
 
     except Exception as e:
         return CheckResult("tflint", False, error=str(e))

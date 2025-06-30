@@ -22,6 +22,7 @@ vars:
 ```
 
 This allows individual tasks to be concise:
+
 ```yaml
 test:black:
   desc: Test only Black formatter
@@ -38,16 +39,19 @@ test:black:
 ### 3. Task Categories
 
 #### Individual Check Tasks
+
 - `test:black`, `test:ruff`, `test:mypy`, etc.
 - Each enables only one specific check
 
 #### Combination Tasks
+
 - `test:python` - All Python checks (Black, Ruff, MyPy, Ty)
 - `test:security` - All security checks (Bandit, Semgrep, Safety, Gitleaks)
 - `test:terraform` - Infrastructure checks
 - `test:fast` - Quick checks excluding slow security scanners
 
 #### Project Check Tasks
+
 - `check` - Run all checks on current project
 - `check:python` - Python checks on current project
 - `check:security` - Security checks on current project
@@ -56,6 +60,7 @@ test:black:
 ## Usage Patterns
 
 ### Testing a New Check Implementation
+
 ```bash
 # Test only the new check on example repo
 task test:mycheck
@@ -65,6 +70,7 @@ task check
 ```
 
 ### Development Workflow
+
 ```bash
 # Quick feedback during development
 task check:fast
@@ -77,6 +83,7 @@ task check:watch
 ```
 
 ### Debugging Pipeline Issues
+
 ```bash
 # Test individual checks to isolate problems
 task test:black

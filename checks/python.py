@@ -4,6 +4,7 @@ from dagger import Client, Directory
 from config import CheckConfig
 from main import CheckResult
 from .base import prepare_python_container_with_uv
+from output_parser import parse_output
 
 
 async def run_python_check(
@@ -59,14 +60,41 @@ async def _run_ruff(container, config: CheckConfig) -> CheckResult:
         try:
             output = await result.stdout()
             await result.exit_code()  # Will raise if non-zero
-            return CheckResult("ruff", True, output=output)
+            
+            # Parse output for structured data
+            parsed = parse_output("ruff", output)
+            if parsed:
+                return CheckResult(
+                    "ruff",
+                    True,
+                    output=output,
+                    issues=parsed.issues,
+                    fix_command=parsed.fix_command,
+                    summary=parsed.summary,
+                )
+            else:
+                return CheckResult("ruff", True, output=output)
         except Exception:
             # Get stderr for error details
             stderr = await container.with_exec(cmd).stderr()
             stdout = await container.with_exec(cmd).stdout()
-            return CheckResult(
-                "ruff", False, output=stdout, error=stderr or "Ruff check failed"
-            )
+            
+            # Parse output for structured data
+            parsed = parse_output("ruff", stdout, stderr)
+            if parsed:
+                return CheckResult(
+                    "ruff",
+                    False,
+                    output=stdout,
+                    error=stderr or "Ruff check failed",
+                    issues=parsed.issues,
+                    fix_command=parsed.fix_command,
+                    summary=parsed.summary,
+                )
+            else:
+                return CheckResult(
+                    "ruff", False, output=stdout, error=stderr or "Ruff check failed"
+                )
 
     except Exception as e:
         return CheckResult("ruff", False, error=str(e))
@@ -89,17 +117,44 @@ async def _run_mypy(container, config: CheckConfig) -> CheckResult:
         try:
             output = await result.stdout()
             await result.exit_code()  # Will raise if non-zero
-            return CheckResult("mypy", True, output=output)
+            
+            # Parse output for structured data
+            parsed = parse_output("mypy", output)
+            if parsed:
+                return CheckResult(
+                    "mypy",
+                    True,
+                    output=output,
+                    issues=parsed.issues,
+                    fix_command=parsed.fix_command,
+                    summary=parsed.summary,
+                )
+            else:
+                return CheckResult("mypy", True, output=output)
         except Exception:
             # Get output for error details
             stdout = await container.with_exec(cmd).stdout()
             stderr = await container.with_exec(cmd).stderr()
-            return CheckResult(
-                "mypy",
-                False,
-                output=stdout,
-                error=stderr or stdout or "MyPy check failed",
-            )
+            
+            # Parse output for structured data
+            parsed = parse_output("mypy", stdout, stderr)
+            if parsed:
+                return CheckResult(
+                    "mypy",
+                    False,
+                    output=stdout,
+                    error=stderr or stdout or "MyPy check failed",
+                    issues=parsed.issues,
+                    fix_command=parsed.fix_command,
+                    summary=parsed.summary,
+                )
+            else:
+                return CheckResult(
+                    "mypy",
+                    False,
+                    output=stdout,
+                    error=stderr or stdout or "MyPy check failed",
+                )
 
     except Exception as e:
         return CheckResult("mypy", False, error=str(e))
@@ -122,14 +177,41 @@ async def _run_ty(container, config: CheckConfig) -> CheckResult:
         try:
             output = await result.stdout()
             await result.exit_code()  # Will raise if non-zero
-            return CheckResult("ty", True, output=output)
+            
+            # Parse output for structured data
+            parsed = parse_output("ty", output)
+            if parsed:
+                return CheckResult(
+                    "ty",
+                    True,
+                    output=output,
+                    issues=parsed.issues,
+                    fix_command=parsed.fix_command,
+                    summary=parsed.summary,
+                )
+            else:
+                return CheckResult("ty", True, output=output)
         except Exception:
             # Get output for error details
             stdout = await container.with_exec(cmd).stdout()
             stderr = await container.with_exec(cmd).stderr()
-            return CheckResult(
-                "ty", False, output=stdout, error=stderr or stdout or "Ty check failed"
-            )
+            
+            # Parse output for structured data
+            parsed = parse_output("ty", stdout, stderr)
+            if parsed:
+                return CheckResult(
+                    "ty",
+                    False,
+                    output=stdout,
+                    error=stderr or stdout or "Ty check failed",
+                    issues=parsed.issues,
+                    fix_command=parsed.fix_command,
+                    summary=parsed.summary,
+                )
+            else:
+                return CheckResult(
+                    "ty", False, output=stdout, error=stderr or stdout or "Ty check failed"
+                )
 
     except Exception as e:
         return CheckResult("ty", False, error=str(e))
@@ -152,19 +234,46 @@ async def _run_black(container, config: CheckConfig) -> CheckResult:
         try:
             output = await result.stdout()
             await result.exit_code()  # Will raise if non-zero
-            return CheckResult(
-                "black", True, output=output or "All files are properly formatted"
-            )
+            
+            # Parse output for structured data
+            parsed = parse_output("black", output)
+            if parsed:
+                return CheckResult(
+                    "black",
+                    True,
+                    output=output or "All files are properly formatted",
+                    issues=parsed.issues,
+                    fix_command=parsed.fix_command,
+                    summary=parsed.summary,
+                )
+            else:
+                return CheckResult(
+                    "black", True, output=output or "All files are properly formatted"
+                )
         except Exception:
             # Get output for error details
             stdout = await container.with_exec(cmd).stdout()
             stderr = await container.with_exec(cmd).stderr()
-            return CheckResult(
-                "black",
-                False,
-                output=stdout,
-                error=stderr or stdout or "Black formatting check failed",
-            )
+            
+            # Parse output for structured data
+            parsed = parse_output("black", stdout, stderr)
+            if parsed:
+                return CheckResult(
+                    "black",
+                    False,
+                    output=stdout,
+                    error=stderr or stdout or "Black formatting check failed",
+                    issues=parsed.issues,
+                    fix_command=parsed.fix_command,
+                    summary=parsed.summary,
+                )
+            else:
+                return CheckResult(
+                    "black",
+                    False,
+                    output=stdout,
+                    error=stderr or stdout or "Black formatting check failed",
+                )
 
     except Exception as e:
         return CheckResult("black", False, error=str(e))

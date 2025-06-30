@@ -45,6 +45,8 @@ uv run python main.py
 - **🔧 Highly configurable** - Enable/disable checks via environment variables
 - **🐳 Powered by Dagger** - Consistent execution locally and in CI
 - **📦 Modern tooling** - Uses `uv` for fast Python package management
+- **🎨 Enhanced Output** - Structured, actionable feedback with file locations and fix commands
+- **💡 Smart Parsing** - Tool outputs are parsed to show issues grouped by file with line numbers
 
 ## 🧪 Supported Checks
 
@@ -82,6 +84,26 @@ uv run python main.py
 task test              # Test on example repo
 task run              # Run on current directory
 task test:python      # Test only Python checks
+```
+
+## 🎨 Enhanced Output
+
+The pipeline provides structured, actionable feedback instead of raw tool output:
+
+```plaintext
+❌ Quality Gate Failed: 23 issues found
+
+📊 Summary:
+  • 12 formatting issues (auto-fixable)
+  • 8 type errors
+  • 3 security warnings
+
+🔍 Black: Found 12 file(s) that need formatting
+  📁 main.py
+    Line 45: Missing blank line after function
+    Line 89: Line too long (92 > 88 characters)
+  
+  💡 Run `black .` to automatically fix these issues
 ```
 
 ## ⚙️ Configuration Examples

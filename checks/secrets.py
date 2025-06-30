@@ -3,6 +3,7 @@
 from dagger import Client, Directory
 from config import CheckConfig
 from main import CheckResult
+from output_parser import parse_output
 
 
 async def run_gitleaks_check(
@@ -48,7 +49,18 @@ async def run_gitleaks_check(
         try:
             output = await result.stdout()
             await result.exit_code()  # Will raise if non-zero
-            return CheckResult("gitleaks", True, output=output or "No secrets found")
+            parsed = parse_output("gitleaks", output)
+            if parsed:
+                return CheckResult(
+                    "gitleaks",
+                    True,
+                    output=output or "No secrets found",
+                    issues=parsed.issues,
+                    fix_command=parsed.fix_command,
+                    summary=parsed.summary,
+                )
+            else:
+                return CheckResult("gitleaks", True, output=output or "No secrets found")
         except Exception:
             # Get output for error details
             stdout = await container.with_exec(cmd).stdout()
@@ -57,7 +69,19 @@ async def run_gitleaks_check(
             # Gitleaks outputs to stderr on findings
             error_output = stderr or stdout or "Gitleaks found secrets"
 
-            return CheckResult("gitleaks", False, output=stdout, error=error_output)
+            parsed = parse_output("gitleaks", stdout, stderr)
+            if parsed:
+                return CheckResult(
+                    "gitleaks",
+                    False,
+                    output=stdout,
+                    error=error_output,
+                    issues=parsed.issues,
+                    fix_command=parsed.fix_command,
+                    summary=parsed.summary,
+                )
+            else:
+                return CheckResult("gitleaks", False, output=stdout, error=error_output)
 
     except Exception as e:
         return CheckResult("gitleaks", False, error=str(e))

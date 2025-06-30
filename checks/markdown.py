@@ -3,6 +3,7 @@
 from dagger import Client, Directory
 from config import CheckConfig
 from main import CheckResult
+from output_parser import parse_output
 
 
 async def run_markdown_check(
@@ -34,22 +35,58 @@ async def run_markdown_check(
             exit_code = await result.exit_code()
 
             if exit_code == 0:
-                return CheckResult("markdown", True, output=output)
+                parsed = parse_output("markdown", output)
+                if parsed:
+                    return CheckResult(
+                        "markdown",
+                        True,
+                        output=output,
+                        issues=parsed.issues,
+                        fix_command=parsed.fix_command,
+                        summary=parsed.summary,
+                    )
+                else:
+                    return CheckResult("markdown", True, output=output)
             else:
                 # Get stderr for error details
                 stderr = await result.stderr()
+                parsed = parse_output("markdown", output, stderr)
+                if parsed:
+                    return CheckResult(
+                        "markdown",
+                        False,
+                        output=output,
+                        error=stderr or "Markdown linting failed",
+                        issues=parsed.issues,
+                        fix_command=parsed.fix_command,
+                        summary=parsed.summary,
+                    )
+                else:
+                    return CheckResult(
+                        "markdown",
+                        False,
+                        output=output,
+                        error=stderr or "Markdown linting failed",
+                    )
+        except Exception:
+            # If exit code is non-zero, Dagger will raise an exception
+            stdout = await container.with_exec(cmd).stdout()
+            stderr = await container.with_exec(cmd).stderr()
+            parsed = parse_output("markdown", stdout, stderr)
+            if parsed:
                 return CheckResult(
                     "markdown",
                     False,
-                    output=output,
+                    output=stdout,
                     error=stderr or "Markdown linting failed",
+                    issues=parsed.issues,
+                    fix_command=parsed.fix_command,
+                    summary=parsed.summary,
                 )
-        except Exception:
-            # If exit code is non-zero, Dagger will raise an exception
-            stderr = await container.with_exec(cmd).stderr()
-            return CheckResult(
-                "markdown", False, error=stderr or "Markdown linting failed"
-            )
+            else:
+                return CheckResult(
+                    "markdown", False, error=stderr or "Markdown linting failed"
+                )
 
     except Exception as e:
         return CheckResult(

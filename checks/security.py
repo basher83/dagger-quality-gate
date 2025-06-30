@@ -4,6 +4,24 @@ from dagger import Client, Directory
 from config import CheckConfig
 from main import CheckResult
 from .base import prepare_python_container_with_uv
+from output_parser import parse_output
+
+
+def _create_result(check_name: str, passed: bool, output: str, error: str = "") -> CheckResult:
+    """Create CheckResult with parsed output if available."""
+    parsed = parse_output(check_name, output, error)
+    if parsed:
+        return CheckResult(
+            check_name,
+            passed,
+            output=output,
+            error=error,
+            issues=parsed.issues,
+            fix_command=parsed.fix_command,
+            summary=parsed.summary,
+        )
+    else:
+        return CheckResult(check_name, passed, output=output, error=error)
 
 
 async def run_security_check(
@@ -58,17 +76,12 @@ async def _run_bandit(
         try:
             output = await result.stdout()
             await result.exit_code()  # Will raise if non-zero
-            return CheckResult("bandit", True, output=output)
+            return _create_result("bandit", True, output)
         except Exception:
             # Get output for error details
             stdout = await container.with_exec(cmd).stdout()
             stderr = await container.with_exec(cmd).stderr()
-            return CheckResult(
-                "bandit",
-                False,
-                output=stdout,
-                error=stderr or "Bandit found security issues",
-            )
+            return _create_result("bandit", False, stdout, stderr or "Bandit found security issues")
 
     except Exception as e:
         return CheckResult("bandit", False, error=str(e))
@@ -100,17 +113,12 @@ async def _run_semgrep(
         try:
             output = await result.stdout()
             await result.exit_code()  # Will raise if non-zero
-            return CheckResult("semgrep", True, output=output)
+            return _create_result("semgrep", True, output)
         except Exception:
             # Get output for error details
             stdout = await container.with_exec(cmd).stdout()
             stderr = await container.with_exec(cmd).stderr()
-            return CheckResult(
-                "semgrep",
-                False,
-                output=stdout,
-                error=stderr or "Semgrep found security issues",
-            )
+            return _create_result("semgrep", False, stdout, stderr or "Semgrep found security issues")
 
     except Exception as e:
         return CheckResult("semgrep", False, error=str(e))
@@ -154,17 +162,12 @@ async def _run_safety(
         try:
             output = await result.stdout()
             await result.exit_code()  # Will raise if non-zero
-            return CheckResult("safety", True, output=output)
+            return _create_result("safety", True, output)
         except Exception:
             # Get output for error details
             stdout = await container.with_exec(cmd).stdout()
             stderr = await container.with_exec(cmd).stderr()
-            return CheckResult(
-                "safety",
-                False,
-                output=stdout,
-                error=stderr or stdout or "Safety found vulnerabilities",
-            )
+            return _create_result("safety", False, stdout, stderr or stdout or "Safety found vulnerabilities")
 
     except Exception as e:
         return CheckResult("safety", False, error=str(e))

@@ -4,7 +4,7 @@
 import asyncio
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import anyio
 import dagger
@@ -13,6 +13,7 @@ from rich.console import Console
 from rich.table import Table
 
 from config import load_config, get_enabled_checks, PipelineConfig, CheckConfig
+from output_parser import parse_output, Issue, IssueSeverity
 
 
 console = Console()
@@ -21,11 +22,23 @@ console = Console()
 class CheckResult:
     """Result of a quality check."""
 
-    def __init__(self, name: str, passed: bool, output: str = "", error: str = ""):
+    def __init__(
+        self,
+        name: str,
+        passed: bool,
+        output: str = "",
+        error: str = "",
+        issues: Optional[List[Issue]] = None,
+        fix_command: Optional[str] = None,
+        summary: Optional[str] = None,
+    ):
         self.name = name
         self.passed = passed
         self.output = output
         self.error = error
+        self.issues = issues or []
+        self.fix_command = fix_command
+        self.summary = summary
 
 
 class QualityGatePipeline:
@@ -69,10 +82,10 @@ class QualityGatePipeline:
             # Determine exit code
             failed_checks = [r for r in results if not r.passed]
             if failed_checks:
-                console.print(f"\n[red]❌ {len(failed_checks)} check(s) failed[/red]")
+                # Summary is displayed in _display_results
                 return 1
             else:
-                console.print("\n[green]✅ All checks passed![/green]")
+                # Success message is displayed in _display_results
                 return 0
 
     async def _run_parallel(
@@ -178,26 +191,115 @@ class QualityGatePipeline:
             )
 
     def _display_results(self, results: List[CheckResult]):
-        """Display check results in a table."""
-        table = Table(title="Quality Gate Results")
-        table.add_column("Check", style="cyan")
-        table.add_column("Status", style="bold")
-        table.add_column("Details")
-
+        """Display check results with enhanced formatting."""
+        # Count issues by severity
+        total_issues = 0
+        errors = 0
+        warnings = 0
+        info = 0
+        fixable_issues = 0
+        files_with_issues = set()
+        
         for result in results:
-            status = "[green]✓ PASS[/green]" if result.passed else "[red]✗ FAIL[/red]"
-            details = result.error if result.error else "OK"
-
-            if self.config.verbose and result.output:
-                details = (
-                    result.output[:100] + "..."
-                    if len(result.output) > 100
-                    else result.output
-                )
-
-            table.add_row(result.name, status, details)
-
-        console.print("\n", table)
+            if result.issues:
+                for issue in result.issues:
+                    total_issues += 1
+                    files_with_issues.add(issue.file_path)
+                    if issue.severity.value == "error":
+                        errors += 1
+                    elif issue.severity.value == "warning":
+                        warnings += 1
+                    else:
+                        info += 1
+            if result.fix_command:
+                fixable_issues += 1
+        
+        # Display summary header
+        if total_issues > 0:
+            console.print(f"\n[bold red]❌ Quality Gate Failed: {total_issues} issues found[/bold red]")
+            console.print(f"\n[bold]📊 Summary:[/bold]")
+            if errors > 0:
+                console.print(f"  • {errors} error{'s' if errors != 1 else ''}")
+            if warnings > 0:
+                console.print(f"  • {warnings} warning{'s' if warnings != 1 else ''}")
+            if info > 0:
+                console.print(f"  • {info} style/info issue{'s' if info != 1 else ''}")
+            if fixable_issues > 0:
+                console.print(f"  • {fixable_issues} auto-fixable")
+            console.print(f"  • Issues in {len(files_with_issues)} file{'s' if len(files_with_issues) != 1 else ''}")
+        else:
+            console.print("\n[bold green]✅ All checks passed![/bold green]")
+        
+        # Display detailed results for each check
+        for result in results:
+            if not result.passed or (self.config.verbose and result.issues):
+                console.print(f"\n[bold]🔍 {result.name.title()}:[/bold]", end="")
+                
+                if result.summary:
+                    console.print(f" {result.summary}")
+                elif result.passed:
+                    console.print(" [green]Passed[/green]")
+                else:
+                    console.print(" [red]Failed[/red]")
+                
+                # Show issues grouped by file
+                if result.issues and (not result.passed or self.config.verbose):
+                    files_dict = {}
+                    for issue in result.issues:
+                        if issue.file_path not in files_dict:
+                            files_dict[issue.file_path] = []
+                        files_dict[issue.file_path].append(issue)
+                    
+                    for file_path, file_issues in files_dict.items():
+                        console.print(f"\n  [cyan]📁 {file_path}[/cyan]")
+                        for issue in file_issues[:5]:  # Limit to 5 issues per file
+                            location = f"Line {issue.line_number}" if issue.line_number else "File"
+                            if issue.column_number:
+                                location += f":{issue.column_number}"
+                            
+                            severity_color = {
+                                "error": "red",
+                                "warning": "yellow",
+                                "info": "blue",
+                                "style": "magenta"
+                            }.get(issue.severity.value, "white")
+                            
+                            console.print(f"    [{severity_color}]{location}[/{severity_color}]: {issue.message}")
+                            if issue.rule_id:
+                                console.print(f"      Rule: {issue.rule_id}", style="dim")
+                        
+                        if len(file_issues) > 5:
+                            console.print(f"    ... and {len(file_issues) - 5} more issues", style="dim")
+                
+                # Show fix command if available
+                if result.fix_command:
+                    console.print(f"\n  💡 Run `{result.fix_command}` to automatically fix these issues")
+            
+            elif result.passed and not self.config.verbose:
+                # Just show a simple checkmark for passed checks in non-verbose mode
+                continue
+        
+        # Show available fix commands at the end
+        fix_commands = [r.fix_command for r in results if r.fix_command and not r.passed]
+        if fix_commands:
+            console.print("\n[bold]To automatically fix formatting issues, run:[/bold]")
+            for cmd in set(fix_commands):
+                console.print(f"  {cmd}")
+        
+        # Classic table view as fallback or in verbose mode
+        if self.config.verbose:
+            console.print("\n[dim]Classic view:[/dim]")
+            table = Table(title="Quality Gate Results")
+            table.add_column("Check", style="cyan")
+            table.add_column("Status", style="bold")
+            table.add_column("Summary")
+            
+            for result in results:
+                status = "[green]✓ PASS[/green]" if result.passed else "[red]✗ FAIL[/red]"
+                summary = result.summary or result.error or "OK"
+                table.add_row(result.name, status, summary)
+            
+            console.print(table)
 
 
 async def main():
