@@ -9,6 +9,7 @@ This guide helps resolve common issues when using the Dagger Quality Gate pipeli
 **Problem**: The `uv` command is not available after installation.
 
 **Solution**:
+
 ```bash
 # Reinstall uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -25,6 +26,7 @@ uv --version
 **Problem**: Error message about Docker daemon not running.
 
 **Solution**:
+
 ```bash
 # Start Docker
 # macOS: Open Docker Desktop
@@ -40,6 +42,7 @@ docker ps
 **Problem**: `RuntimeError: Requested component 'otlp_proto_grpc' not found`
 
 **Solution**: Already fixed in the project. If you encounter this:
+
 ```bash
 # Ensure dependencies are up to date
 uv sync
@@ -51,7 +54,8 @@ uv sync
 
 **Problem**: Ruff is finding linting issues (this is expected behavior).
 
-**Solution**: 
+**Solution**:
+
 - Review the errors in Dagger Cloud trace
 - Fix the issues in your code
 - Or disable specific rules in `.ruff.toml`
@@ -61,6 +65,7 @@ uv sync
 **Problem**: Using old safety command.
 
 **Solution**: Already fixed - uses `safety scan` now. Update to latest version:
+
 ```bash
 uv sync
 ```
@@ -70,6 +75,7 @@ uv sync
 **Problem**: Terraform files are not properly formatted.
 
 **Solution**:
+
 ```bash
 # Auto-format your terraform files
 terraform fmt -recursive
@@ -80,6 +86,7 @@ terraform fmt -recursive
 **Problem**: MyPy can't find imported modules.
 
 **Solution**:
+
 ```bash
 # Add to mypy configuration
 [tool.mypy]
@@ -102,6 +109,7 @@ uv pip install types-requests types-pyyaml
 **Problem**: Pipeline crashes or hangs during parallel execution.
 
 **Solution**:
+
 ```bash
 # Run checks sequentially
 PARALLEL=false uv run python main.py
@@ -114,6 +122,7 @@ PARALLEL=false uv run python main.py
 **Problem**: Checks take a long time to start.
 
 **Solution**:
+
 - Use smaller base images (Alpine variants)
 - Pre-pull common images
 - Consider creating custom base images
@@ -125,6 +134,7 @@ PARALLEL=false uv run python main.py
 **Problem**: uv not available in CI.
 
 **Solution**: Use the official setup action:
+
 ```yaml
 - name: Install uv
   uses: astral-sh/setup-uv@v3
@@ -135,6 +145,7 @@ PARALLEL=false uv run python main.py
 **Problem**: Can't write to directories or install packages.
 
 **Solution**:
+
 ```yaml
 # Run as root in container
 container:
@@ -146,6 +157,7 @@ container:
 **Problem**: Pipeline exceeds CI timeout limit.
 
 **Solution**:
+
 ```yaml
 # Increase timeout
 timeout-minutes: 30
@@ -161,9 +173,10 @@ env:
 ### 1. View Dagger Cloud Traces
 
 Access detailed execution logs:
+
 1. Run the pipeline
 2. Look for the trace URL in output
-3. Visit https://dagger.cloud/... to see detailed logs
+3. Visit <https://dagger.cloud/>... to see detailed logs
 
 ### 2. Enable Verbose Mode
 
@@ -174,6 +187,7 @@ VERBOSE=true uv run python main.py
 ### 3. Run Single Check
 
 Isolate issues by running one check at a time:
+
 ```bash
 # Only run ruff
 ENABLE_RUFF=true ENABLE_MYPY=false ENABLE_SAFETY=false ... uv run python main.py
@@ -182,6 +196,7 @@ ENABLE_RUFF=true ENABLE_MYPY=false ENABLE_SAFETY=false ... uv run python main.py
 ### 4. Check Container Logs
 
 For custom debugging, modify the check to output more info:
+
 ```python
 # Add debug output
 debug_output = await container.with_exec(["ls", "-la"]).stdout()
@@ -191,6 +206,7 @@ print(f"Debug: {debug_output}")
 ### 5. Test in Container
 
 Reproduce issues locally:
+
 ```bash
 # Start a container with same image
 docker run -it --rm -v $(pwd):/src -w /src python:3.11-slim bash
@@ -215,6 +231,7 @@ uv --version
 **Problem**: Wrong syntax for uv tool install.
 
 **Solution**: Use correct package names:
+
 ```bash
 # Correct
 uv tool install ruff

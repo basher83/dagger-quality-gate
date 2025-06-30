@@ -4,7 +4,7 @@ This guide explains how to extend the Dagger Quality Gate pipeline with new chec
 
 ## Project Structure
 
-```
+```plaintext
 dagger-quality-gate/
 ├── main.py                # Main pipeline orchestrator
 ├── config.py              # Configuration management
@@ -148,44 +148,112 @@ container = container.with_exec(["uv", "pip", "install", "--system", "mypy"])
 
 ## Development Workflow
 
-### Local Development
+### Task Commands
 
-1. **Set up environment**:
-   ```bash
-   uv sync
-   ```
+The project includes a comprehensive `Taskfile.yml` with commands for development:
 
-2. **Run tests**:
-   ```bash
-   task test
-   ```
+#### Basic Commands
 
-3. **Lint your code**:
-   ```bash
-   task lint
-   ```
+```bash
+# Install dependencies
+task install
 
-4. **Format code**:
-   ```bash
-   task format
-   ```
+# Run all checks on current project
+task check
 
-### Testing Changes
+# Run pipeline on example repository (with intentional issues)
+task test
 
-1. **Test on example repository**:
-   ```bash
-   task test
-   ```
+# Clean generated files
+task clean
+```
 
-2. **Test on real project**:
-   ```bash
-   uv run python main.py /path/to/project
-   ```
+#### Testing Individual Checks
 
-3. **Test specific checks**:
-   ```bash
-   ENABLE_MYCHECK=true ENABLE_OTHERS=false uv run python main.py
-   ```
+Test specific tools on the example repository:
+
+```bash
+# Individual checks
+task test:black      # Test only Black formatter
+task test:ruff       # Test only Ruff linter
+task test:mypy       # Test only MyPy type checker
+task test:markdown   # Test only Markdown linting
+task test:secrets    # Test only Gitleaks secrets scanning
+task test:bandit     # Test only Bandit security scanner
+```
+
+#### Testing Check Combinations
+
+Test groups of related checks:
+
+```bash
+# Python checks (Black, Ruff, MyPy, Ty)
+task test:python
+
+# Security checks (Bandit, Semgrep, Safety, Gitleaks)
+task test:security
+
+# Terraform checks (fmt and tflint)
+task test:terraform
+
+# Fast checks only (excludes slow security scanners)
+task test:fast
+```
+
+#### Running Checks on Current Project
+
+Run quality checks on the dagger-quality-gate project itself:
+
+```bash
+# Run all checks
+task check
+
+# Run only Python checks
+task check:python
+
+# Run only security checks  
+task check:security
+
+# Run fast checks (with PARALLEL=false for stability)
+task check:fast
+
+# Watch for changes and run checks
+task check:watch
+```
+
+#### Other Development Tasks
+
+```bash
+# Run linters
+task lint
+
+# Format code with ruff
+task format
+
+# Run linters with auto-fix
+task lint:fix
+
+# Run pipeline with verbose output
+task test:verbose
+
+# Simulate CI run
+task ci
+```
+
+### Manual Testing
+
+For more control over specific scenarios:
+
+```bash
+# Test on a specific directory
+uv run python main.py /path/to/project
+
+# Test with specific checks enabled
+ENABLE_BLACK=true ENABLE_RUFF=true uv run python main.py .
+
+# Test with verbose output
+VERBOSE=true uv run python main.py examples/sample-repo
+```
 
 ## Best Practices
 
@@ -268,6 +336,7 @@ RUN uv pip install --system ruff mypy
 ### Parallel Execution
 
 Checks run in parallel by default. Consider:
+
 - Resource usage
 - Container startup time
 - Network dependencies
@@ -275,6 +344,7 @@ Checks run in parallel by default. Consider:
 ### Caching Strategies
 
 For faster execution:
+
 - Cache tool installations
 - Use Dagger's cache mounts
 - Pre-build common base images
@@ -292,6 +362,7 @@ This project uses Renovate for automated dependency updates with security-focuse
 - **Example Repository Exclusion**: The `examples/sample-repo/` is ignored (intentional vulnerabilities)
 
 See `renovate.json` for the full configuration. Renovate will:
+
 1. Create PRs to pin all container images to digests
 2. Update those digests when new versions are available
 3. Alert on security vulnerabilities
@@ -300,6 +371,7 @@ See `renovate.json` for the full configuration. Renovate will:
 ### Dependabot Configuration
 
 Dependabot is configured to:
+
 - Monitor Python dependencies weekly
 - Ignore the example repository
 - Monitor GitHub Actions for updates

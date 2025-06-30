@@ -11,6 +11,7 @@ This document provides detailed information about each quality check available i
 **Purpose**: Ensures consistent markdown formatting and style
 
 Checks for:
+
 - Line length limits
 - Proper heading structure
 - List formatting
@@ -19,6 +20,7 @@ Checks for:
 - Link formatting
 
 **Common Issues**:
+
 ```markdown
 # Bad
 ## Heading without blank line above
@@ -40,6 +42,7 @@ Checks for:
 **Purpose**: Fast Python linter that replaces flake8, isort, and more
 
 Checks for:
+
 - Unused imports and variables
 - Code style (PEP 8)
 - Import sorting
@@ -49,6 +52,7 @@ Checks for:
 **Pipeline Command**: `ruff check .`
 
 **Configuration**: Create `.ruff.toml` or `pyproject.toml`:
+
 ```toml
 [tool.ruff]
 line-length = 100
@@ -62,6 +66,7 @@ target-version = "py310"
 **Purpose**: The uncompromising Python code formatter
 
 Checks for:
+
 - Code formatting consistency
 - PEP 8 compliance (with sensible defaults)
 - Consistent string quotes
@@ -70,6 +75,7 @@ Checks for:
 **Pipeline Command**: `black --check --diff .`
 
 **Configuration**: Create `pyproject.toml`:
+
 ```toml
 [tool.black]
 line-length = 88
@@ -78,6 +84,7 @@ include = '\.pyi?$'
 ```
 
 **Usage Notes**:
+
 - Runs in check mode to verify formatting without making changes
 - Shows diff of what would be changed
 - To auto-format locally: `black .`
@@ -91,6 +98,7 @@ include = '\.pyi?$'
 **Purpose**: Static type checker for Python
 
 Checks for:
+
 - Type annotation correctness
 - Missing type hints
 - Type compatibility
@@ -99,6 +107,7 @@ Checks for:
 **Pipeline Command**: `mypy .`
 
 **Configuration**: Create `mypy.ini` or use `pyproject.toml`:
+
 ```toml
 [tool.mypy]
 python_version = "3.10"
@@ -112,6 +121,7 @@ warn_return_any = true
 **Purpose**: Modern Python type checker (alternative to mypy)
 
 Checks for:
+
 - Type safety
 - Type inference
 - Compatibility with Python typing features
@@ -119,12 +129,14 @@ Checks for:
 **Pipeline Command**: `ty check .`
 
 **Usage Notes**:
+
 - Experimental tool by Astral (makers of Ruff)
 - Installed at `/root/.local/share/uv/tools/ty/bin/ty`
 - Currently in early development, expect changes
 - No configuration file support yet
 
 **Local Testing**:
+
 ```bash
 # Install Ty
 uv tool install ty
@@ -142,6 +154,7 @@ ty check .
 **Purpose**: Security linter for Python
 
 Checks for:
+
 - Hardcoded passwords
 - SQL injection vulnerabilities
 - Use of insecure functions
@@ -149,6 +162,7 @@ Checks for:
 - Weak cryptography
 
 **Suppressing False Positives**:
+
 ```python
 # nosec - Comment to suppress specific line
 subprocess.call(user_input, shell=True)  # nosec B602
@@ -161,6 +175,7 @@ subprocess.call(user_input, shell=True)  # nosec B602
 **Purpose**: Static analysis for security and bug finding
 
 Checks for:
+
 - OWASP Top 10 vulnerabilities
 - Language-specific security issues
 - Custom security rules
@@ -175,6 +190,7 @@ Checks for:
 **Purpose**: Checks Python dependencies for known vulnerabilities
 
 Checks for:
+
 - Outdated packages with CVEs
 - Insecure dependency versions
 - License compliance (with paid version)
@@ -190,11 +206,13 @@ Checks for:
 **Purpose**: Ensures consistent Terraform formatting
 
 Checks for:
+
 - Proper indentation
 - Consistent spacing
 - Canonical format
 
 **Auto-fix**: Run without `-check` flag:
+
 ```bash
 terraform fmt -recursive
 ```
@@ -206,12 +224,14 @@ terraform fmt -recursive
 **Purpose**: Terraform linter for best practices
 
 Checks for:
+
 - Deprecated syntax
 - Unused declarations
 - Missing required attributes
 - Provider-specific issues
 
 **Configuration**: Create `.tflint.hcl`:
+
 ```hcl
 rule "terraform_required_providers" {
   enabled = true
@@ -227,6 +247,7 @@ rule "terraform_required_providers" {
 **Purpose**: Detects secrets in code
 
 Checks for:
+
 - API keys
 - AWS credentials
 - Private keys
@@ -234,6 +255,7 @@ Checks for:
 - Tokens
 
 **Configuration**: Create `.gitleaks.toml`:
+
 ```toml
 [allowlist]
 paths = [
@@ -242,7 +264,8 @@ paths = [
 ```
 
 **Ignoring False Positives**: Create `.gitleaksignore`:
-```
+
+```markdown
 # Format: <secret-hash>:<file>:<line>
 abc123def456:config.py:42
 ```

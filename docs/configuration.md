@@ -45,7 +45,7 @@ All checks are **enabled by default**. To disable specific checks, set their env
 | Terraform Linting | `ENABLE_TFLINT` |
 | Secrets Scanning | `ENABLE_GITLEAKS` |
 
-### Examples
+## Usage Examples
 
 ```bash
 # Run only Python checks (disable non-Python checks)

@@ -3,6 +3,19 @@ version: '3'
 vars:
   PYTHON: uv run python
   EXAMPLE_DIR: examples/sample-repo
+  # Default environment - all checks disabled
+  ALL_DISABLED: |
+    ENABLE_BLACK=false \
+    ENABLE_RUFF=false \
+    ENABLE_MYPY=false \
+    ENABLE_TY=false \
+    ENABLE_BANDIT=false \
+    ENABLE_SEMGREP=false \
+    ENABLE_SAFETY=false \
+    ENABLE_MARKDOWN=false \
+    ENABLE_TERRAFORM=false \
+    ENABLE_TFLINT=false \
+    ENABLE_GITLEAKS=false
 
 tasks:
   default:
@@ -30,123 +43,57 @@ tasks:
     cmds:
       - VERBOSE=true {{.PYTHON}} main.py {{.EXAMPLE_DIR}}
 
-  # Default ENV for all tests - all checks disabled
-  .test_defaults: &test_defaults
-    env:
-      ENABLE_BLACK: 'false'
-      ENABLE_RUFF: 'false'
-      ENABLE_MYPY: 'false'
-      ENABLE_TY: 'false'
-      ENABLE_BANDIT: 'false'
-      ENABLE_SEMGREP: 'false'
-      ENABLE_SAFETY: 'false'
-      ENABLE_MARKDOWN: 'false'
-      ENABLE_TERRAFORM: 'false'
-      ENABLE_TFLINT: 'false'
-      ENABLE_GITLEAKS: 'false'
-
   # Individual check tasks
   test:black:
-    <<: *test_defaults
     desc: Test only Black formatter
-    env:
-      <<: *test_defaults
-      ENABLE_BLACK: 'true'
     cmds:
-      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+      - '{{.ALL_DISABLED}} ENABLE_BLACK=true {{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
 
   test:ruff:
-    <<: *test_defaults
     desc: Test only Ruff linter
-    env:
-      <<: *test_defaults
-      ENABLE_RUFF: 'true'
     cmds:
-      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+      - '{{.ALL_DISABLED}} ENABLE_RUFF=true {{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
 
   test:mypy:
-    <<: *test_defaults
     desc: Test only MyPy type checker
-    env:
-      <<: *test_defaults
-      ENABLE_MYPY: 'true'
     cmds:
-      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+      - '{{.ALL_DISABLED}} ENABLE_MYPY=true {{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
 
   test:markdown:
-    <<: *test_defaults
     desc: Test only Markdown linting
-    env:
-      <<: *test_defaults
-      ENABLE_MARKDOWN: 'true'
     cmds:
-      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+      - '{{.ALL_DISABLED}} ENABLE_MARKDOWN=true {{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
 
   test:secrets:
-    <<: *test_defaults
     desc: Test only Gitleaks secrets scanning
-    env:
-      <<: *test_defaults
-      ENABLE_GITLEAKS: 'true'
     cmds:
-      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+      - '{{.ALL_DISABLED}} ENABLE_GITLEAKS=true {{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
 
   test:bandit:
-    <<: *test_defaults
     desc: Test only Bandit security scanner
-    env:
-      <<: *test_defaults
-      ENABLE_BANDIT: 'true'
     cmds:
-      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+      - '{{.ALL_DISABLED}} ENABLE_BANDIT=true {{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
 
   # Combination tasks
   test:python:
-    <<: *test_defaults
     desc: Test all Python checks (Black, Ruff, MyPy, Ty)
-    env:
-      <<: *test_defaults
-      ENABLE_BLACK: 'true'
-      ENABLE_RUFF: 'true'
-      ENABLE_MYPY: 'true'
-      ENABLE_TY: 'true'
     cmds:
-      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+      - '{{.ALL_DISABLED}} ENABLE_BLACK=true ENABLE_RUFF=true ENABLE_MYPY=true ENABLE_TY=true {{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
 
   test:security:
-    <<: *test_defaults
     desc: Test all security checks (Bandit, Semgrep, Safety, Gitleaks)
-    env:
-      <<: *test_defaults
-      ENABLE_BANDIT: 'true'
-      ENABLE_SEMGREP: 'true'
-      ENABLE_SAFETY: 'true'
-      ENABLE_GITLEAKS: 'true'
     cmds:
-      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+      - '{{.ALL_DISABLED}} ENABLE_BANDIT=true ENABLE_SEMGREP=true ENABLE_SAFETY=true ENABLE_GITLEAKS=true {{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
 
   test:terraform:
-    <<: *test_defaults
     desc: Test Terraform checks (fmt and tflint)
-    env:
-      <<: *test_defaults
-      ENABLE_TERRAFORM: 'true'
-      ENABLE_TFLINT: 'true'
     cmds:
-      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+      - '{{.ALL_DISABLED}} ENABLE_TERRAFORM=true ENABLE_TFLINT=true {{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
 
   test:fast:
-    <<: *test_defaults
     desc: Test fast checks only (exclude slow security scanners)
-    env:
-      <<: *test_defaults
-      ENABLE_BLACK: 'true'
-      ENABLE_RUFF: 'true'
-      ENABLE_MYPY: 'true'
-      ENABLE_MARKDOWN: 'true'
-      ENABLE_TERRAFORM: 'true'
     cmds:
-      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+      - '{{.ALL_DISABLED}} ENABLE_BLACK=true ENABLE_RUFF=true ENABLE_MYPY=true ENABLE_MARKDOWN=true ENABLE_TERRAFORM=true {{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
 
   lint:
     desc: Run linters on this project
@@ -181,41 +128,19 @@ tasks:
       - '{{.PYTHON}} main.py .'
 
   check:python:
-    <<: *test_defaults
     desc: Run Python checks on current project
-    env:
-      <<: *test_defaults
-      ENABLE_BLACK: 'true'
-      ENABLE_RUFF: 'true'
-      ENABLE_MYPY: 'true'
-      ENABLE_TY: 'true'
     cmds:
-      - '{{.PYTHON}} main.py .'
+      - '{{.ALL_DISABLED}} ENABLE_BLACK=true ENABLE_RUFF=true ENABLE_MYPY=true ENABLE_TY=true {{.PYTHON}} main.py .'
 
   check:security:
-    <<: *test_defaults
     desc: Run security checks on current project
-    env:
-      <<: *test_defaults
-      ENABLE_BANDIT: 'true'
-      ENABLE_SEMGREP: 'true'
-      ENABLE_SAFETY: 'true'
-      ENABLE_GITLEAKS: 'true'
     cmds:
-      - '{{.PYTHON}} main.py .'
+      - '{{.ALL_DISABLED}} ENABLE_BANDIT=true ENABLE_SEMGREP=true ENABLE_SAFETY=true ENABLE_GITLEAKS=true {{.PYTHON}} main.py .'
 
   check:fast:
-    <<: *test_defaults
     desc: Run fast checks on current project
-    env:
-      <<: *test_defaults
-      ENABLE_BLACK: 'true'
-      ENABLE_RUFF: 'true'
-      ENABLE_MYPY: 'true'
-      ENABLE_MARKDOWN: 'true'
-      PARALLEL: 'false'
     cmds:
-      - '{{.PYTHON}} main.py .'
+      - '{{.ALL_DISABLED}} ENABLE_BLACK=true ENABLE_RUFF=true ENABLE_MYPY=true ENABLE_MARKDOWN=true PARALLEL=false {{.PYTHON}} main.py .'
 
   check:watch:
     desc: Watch for changes and run pipeline

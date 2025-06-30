@@ -103,7 +103,7 @@ quality-gate-pr:
 
 ## GitLab CI
 
-### Basic Setup
+### GitLab Basic Setup
 
 Create `.gitlab-ci.yml`:
 

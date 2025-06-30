@@ -44,6 +44,7 @@ uv sync
 ```
 
 This will:
+
 - Create a virtual environment in `.venv/`
 - Install all dependencies from `pyproject.toml`
 - Generate a `uv.lock` file for reproducible builds
