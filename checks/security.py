@@ -18,16 +18,25 @@ async def run_security_check(
         elif check_name == "safety":
             return await _run_safety(client, source, config)
         else:
-            return CheckResult(check_name, False, error=f"Unknown security check: {check_name}")
+            return CheckResult(
+                check_name, False, error=f"Unknown security check: {check_name}"
+            )
 
     except Exception as e:
-        return CheckResult(check_name, False, error=f"Failed to run {check_name}: {str(e)}")
+        return CheckResult(
+            check_name, False, error=f"Failed to run {check_name}: {str(e)}"
+        )
 
 
-async def _run_bandit(client: Client, source: Directory, config: CheckConfig) -> CheckResult:
-    """Run Bandit security scanner for Python."""
+async def _run_bandit(
+    client: Client, source: Directory, config: CheckConfig
+) -> CheckResult:
+    """Run Bandit security scanner."""
     try:
-        # Create container and install bandit with uv
+        # Create fresh container for bandit
+        if not config.container_image:
+            raise ValueError("No container image specified for bandit")
+
         container = (
             client.container()
             .from_(config.container_image)
@@ -35,7 +44,9 @@ async def _run_bandit(client: Client, source: Directory, config: CheckConfig) ->
             .with_workdir("/src")
         )
         container = prepare_python_container_with_uv(container)
-        container = container.with_exec(["uv", "pip", "install", "--system", "bandit[toml]"])
+        container = container.with_exec(
+            ["uv", "pip", "install", "--system", "bandit[toml]"]
+        )
 
         # Build command
         cmd = ["bandit", "-r", "."]
@@ -53,17 +64,25 @@ async def _run_bandit(client: Client, source: Directory, config: CheckConfig) ->
             stdout = await container.with_exec(cmd).stdout()
             stderr = await container.with_exec(cmd).stderr()
             return CheckResult(
-                "bandit", False, output=stdout, error=stderr or "Bandit found security issues"
+                "bandit",
+                False,
+                output=stdout,
+                error=stderr or "Bandit found security issues",
             )
 
     except Exception as e:
         return CheckResult("bandit", False, error=str(e))
 
 
-async def _run_semgrep(client: Client, source: Directory, config: CheckConfig) -> CheckResult:
+async def _run_semgrep(
+    client: Client, source: Directory, config: CheckConfig
+) -> CheckResult:
     """Run Semgrep security scanner."""
     try:
         # Use semgrep container image
+        if not config.container_image:
+            raise ValueError("No container image specified for semgrep")
+
         container = (
             client.container()
             .from_(config.container_image)
@@ -87,17 +106,25 @@ async def _run_semgrep(client: Client, source: Directory, config: CheckConfig) -
             stdout = await container.with_exec(cmd).stdout()
             stderr = await container.with_exec(cmd).stderr()
             return CheckResult(
-                "semgrep", False, output=stdout, error=stderr or "Semgrep found security issues"
+                "semgrep",
+                False,
+                output=stdout,
+                error=stderr or "Semgrep found security issues",
             )
 
     except Exception as e:
         return CheckResult("semgrep", False, error=str(e))
 
 
-async def _run_safety(client: Client, source: Directory, config: CheckConfig) -> CheckResult:
+async def _run_safety(
+    client: Client, source: Directory, config: CheckConfig
+) -> CheckResult:
     """Run Safety vulnerability scanner for Python dependencies."""
     try:
         # Create container and install safety with uv
+        if not config.container_image:
+            raise ValueError("No container image specified for safety")
+
         container = (
             client.container()
             .from_(config.container_image)

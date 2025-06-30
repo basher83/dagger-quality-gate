@@ -18,8 +18,7 @@ container = container.with_exec(
     [
         "sh",
         "-c",
-        "set -euo pipefail && "
-        "apt-get -qq update && "
+        "apt-get update && "
         "apt-get -y --no-install-recommends install curl && "
         "curl -LsSf https://astral.sh/uv/install.sh | sh && "
         "apt-get clean && "
@@ -30,10 +29,9 @@ container = container.with_exec(
 
 ## Key Improvements
 
-1. **Error Handling**: `set -euo pipefail` ensures:
-   - `-e`: Exit on any command failure
-   - `-u`: Exit on undefined variables
-   - `-o pipefail`: Exit if any command in a pipeline fails
+1. **Error Handling**: Chain commands with `&&` to ensure each step succeeds before continuing
+   - Note: `set -euo pipefail` is bash-specific and not available in POSIX sh
+   - Using `&&` between commands provides similar fail-fast behavior
 
 2. **Complete Cleanup**:
    - `apt-get clean`: Removes package cache from `/var/cache/apt/archives`
@@ -42,13 +40,13 @@ container = container.with_exec(
 3. **Benefits**:
    - **Fewer Layers**: Reduces final image size
    - **Better Caching**: Single layer can be cached more efficiently
-   - **Proper Error Handling**: Pipeline fails if any step fails
+   - **Proper Error Handling**: Pipeline fails if any step fails (via && chaining)
    - **Complete Cleanup**: Both package cache and index files removed
    - **Atomic Operation**: All steps succeed or fail together
 
 ## Best Practices
-- Always use `set -euo pipefail` when chaining commands
+- Use `&&` to chain commands for error handling in POSIX sh
+- For bash-specific features like `pipefail`, ensure bash is available first
 - Clean up both apt cache (`apt-get clean`) and lists
 - Use `sh -c` to run multiple commands as one exec
 - Remove temporary files immediately after use
-- Chain commands with `&&` to ensure sequential success

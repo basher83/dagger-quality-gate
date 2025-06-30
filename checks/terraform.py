@@ -15,16 +15,25 @@ async def run_terraform_check(
         elif check_name == "tflint":
             return await _run_tflint(client, source, config)
         else:
-            return CheckResult(check_name, False, error=f"Unknown Terraform check: {check_name}")
+            return CheckResult(
+                check_name, False, error=f"Unknown Terraform check: {check_name}"
+            )
 
     except Exception as e:
-        return CheckResult(check_name, False, error=f"Failed to run {check_name}: {str(e)}")
+        return CheckResult(
+            check_name, False, error=f"Failed to run {check_name}: {str(e)}"
+        )
 
 
-async def _run_terraform_fmt(client: Client, source: Directory, config: CheckConfig) -> CheckResult:
+async def _run_terraform_fmt(
+    client: Client, source: Directory, config: CheckConfig
+) -> CheckResult:
     """Run terraform fmt check."""
     try:
         # Create container with terraform
+        if not config.container_image:
+            raise ValueError("No container image specified for terraform")
+
         container = (
             client.container()
             .from_(config.container_image)
@@ -43,7 +52,9 @@ async def _run_terraform_fmt(client: Client, source: Directory, config: CheckCon
             output = await result.stdout()
             await result.exit_code()  # Will raise if non-zero
             return CheckResult(
-                "terraform", True, output=output or "All Terraform files properly formatted"
+                "terraform",
+                True,
+                output=output or "All Terraform files properly formatted",
             )
         except Exception:
             # Get list of files that need formatting
@@ -61,10 +72,15 @@ async def _run_terraform_fmt(client: Client, source: Directory, config: CheckCon
         return CheckResult("terraform", False, error=str(e))
 
 
-async def _run_tflint(client: Client, source: Directory, config: CheckConfig) -> CheckResult:
+async def _run_tflint(
+    client: Client, source: Directory, config: CheckConfig
+) -> CheckResult:
     """Run tflint linter."""
     try:
         # Create container with tflint
+        if not config.container_image:
+            raise ValueError("No container image specified for tflint")
+
         container = (
             client.container()
             .from_(config.container_image)

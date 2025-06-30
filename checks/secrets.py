@@ -5,10 +5,15 @@ from config import CheckConfig
 from main import CheckResult
 
 
-async def run_gitleaks_check(client: Client, source: Directory, config: CheckConfig) -> CheckResult:
+async def run_gitleaks_check(
+    client: Client, source: Directory, config: CheckConfig
+) -> CheckResult:
     """Run Gitleaks secrets scanner."""
     try:
         # Create container with gitleaks
+        if not config.container_image:
+            raise ValueError("No container image specified for gitleaks")
+
         container = (
             client.container()
             .from_(config.container_image)

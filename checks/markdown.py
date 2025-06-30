@@ -5,10 +5,15 @@ from config import CheckConfig
 from main import CheckResult
 
 
-async def run_markdown_check(client: Client, source: Directory, config: CheckConfig) -> CheckResult:
+async def run_markdown_check(
+    client: Client, source: Directory, config: CheckConfig
+) -> CheckResult:
     """Run markdownlint on markdown files."""
     try:
         # Create container with markdownlint
+        if not config.container_image:
+            raise ValueError("No container image specified for markdown")
+
         container = (
             client.container()
             .from_(config.container_image)
@@ -34,12 +39,19 @@ async def run_markdown_check(client: Client, source: Directory, config: CheckCon
                 # Get stderr for error details
                 stderr = await result.stderr()
                 return CheckResult(
-                    "markdown", False, output=output, error=stderr or "Markdown linting failed"
+                    "markdown",
+                    False,
+                    output=output,
+                    error=stderr or "Markdown linting failed",
                 )
         except Exception:
             # If exit code is non-zero, Dagger will raise an exception
             stderr = await container.with_exec(cmd).stderr()
-            return CheckResult("markdown", False, error=stderr or "Markdown linting failed")
+            return CheckResult(
+                "markdown", False, error=stderr or "Markdown linting failed"
+            )
 
     except Exception as e:
-        return CheckResult("markdown", False, error=f"Failed to run markdownlint: {str(e)}")
+        return CheckResult(
+            "markdown", False, error=f"Failed to run markdownlint: {str(e)}"
+        )

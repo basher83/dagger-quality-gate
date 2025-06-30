@@ -1,7 +1,7 @@
 """Configuration management for Dagger quality gate pipeline."""
 
 import os
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -25,7 +25,9 @@ class PipelineConfig(BaseModel):
 
     # Check configurations
     markdown: CheckConfig = Field(
-        default_factory=lambda: CheckConfig(container_image="davidanson/markdownlint-cli2:latest")
+        default_factory=lambda: CheckConfig(
+            container_image="davidanson/markdownlint-cli2:latest"
+        )
     )
 
     ruff: CheckConfig = Field(
@@ -36,7 +38,9 @@ class PipelineConfig(BaseModel):
         default_factory=lambda: CheckConfig(container_image="python:3.11-slim")
     )
 
-    ty: CheckConfig = Field(default_factory=lambda: CheckConfig(container_image="python:3.11-slim"))
+    ty: CheckConfig = Field(
+        default_factory=lambda: CheckConfig(container_image="python:3.11-slim")
+    )
 
     black: CheckConfig = Field(
         default_factory=lambda: CheckConfig(container_image="python:3.11-slim")
@@ -47,7 +51,9 @@ class PipelineConfig(BaseModel):
     )
 
     semgrep: CheckConfig = Field(
-        default_factory=lambda: CheckConfig(container_image="returntocorp/semgrep:latest")
+        default_factory=lambda: CheckConfig(
+            container_image="returntocorp/semgrep:latest"
+        )
     )
 
     safety: CheckConfig = Field(
@@ -55,7 +61,9 @@ class PipelineConfig(BaseModel):
     )
 
     terraform: CheckConfig = Field(
-        default_factory=lambda: CheckConfig(container_image="hashicorp/terraform:latest")
+        default_factory=lambda: CheckConfig(
+            container_image="hashicorp/terraform:latest"
+        )
     )
 
     tflint: CheckConfig = Field(
@@ -65,7 +73,9 @@ class PipelineConfig(BaseModel):
     )
 
     gitleaks: CheckConfig = Field(
-        default_factory=lambda: CheckConfig(container_image="zricethezav/gitleaks:latest")
+        default_factory=lambda: CheckConfig(
+            container_image="zricethezav/gitleaks:latest"
+        )
     )
 
 
@@ -76,7 +86,9 @@ def str_to_bool(value: str) -> bool:
 
 def load_config() -> PipelineConfig:
     """Load configuration from environment variables."""
-    config_dict = {}
+    # Start with default config
+    default_config = PipelineConfig()
+    config_dict: Dict[str, Any] = {}
 
     # General settings
     if val := os.getenv("FAIL_FAST"):
@@ -104,9 +116,15 @@ def load_config() -> PipelineConfig:
     ]
 
     for check in checks:
-        check_config = {}
+        # Get the default check config
+        default_check_config = getattr(default_config, check)
+        check_config = {
+            "enabled": default_check_config.enabled,
+            "container_image": default_check_config.container_image,
+            "additional_args": default_check_config.additional_args.copy(),
+        }
 
-        # Check if enabled
+        # Override with environment variables
         if val := os.getenv(f"ENABLE_{check.upper()}"):
             check_config["enabled"] = str_to_bool(val)
 
@@ -118,8 +136,7 @@ def load_config() -> PipelineConfig:
         if val := os.getenv(f"{check.upper()}_ARGS"):
             check_config["additional_args"] = val.split()
 
-        if check_config:
-            config_dict[check] = CheckConfig(**check_config)
+        config_dict[check] = CheckConfig(**check_config)
 
     return PipelineConfig(**config_dict)
 

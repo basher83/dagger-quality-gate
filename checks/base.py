@@ -10,8 +10,7 @@ def prepare_python_container_with_uv(container: Container) -> Container:
             [
                 "sh",
                 "-c",
-                "set -euo pipefail && "
-                "apt-get -qq update && "
+                "apt-get update && "
                 "apt-get -y --no-install-recommends install curl && "
                 "curl -LsSf https://astral.sh/uv/install.sh | sh && "
                 "apt-get clean && "
@@ -20,7 +19,8 @@ def prepare_python_container_with_uv(container: Container) -> Container:
         )
         # Set PATH properly to include uv location
         .with_env_variable(
-            "PATH", "/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            "PATH",
+            "/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
         )
     )
 

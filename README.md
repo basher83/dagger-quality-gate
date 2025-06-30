@@ -18,8 +18,8 @@ uv --version
 # Run quality checks on any project
 uvx --from git+https://github.com/basher83/dagger-quality-gate quality-gate /path/to/your/project
 
-# Or run on current directory
-uvx --from git+https://github.com/basher83/dagger-quality-gate quality-gate
+# Run on current directory (you must specify . explicitly)
+uvx --from git+https://github.com/basher83/dagger-quality-gate quality-gate .
 ```
 
 ### Option 2: Clone and install locally

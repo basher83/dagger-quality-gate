@@ -23,7 +23,9 @@ import sys  # noqa: F401
 unused_variable = 42
 
 # Style issues (long line)
-really_long_variable_name_that_exceeds_the_typical_line_length_limit_and_should_be_flagged_by_linters = "This line is way too long"
+really_long_variable_name_that_exceeds_the_typical_line_length_limit_and_should_be_flagged_by_linters = (
+    "This line is way too long"
+)
 
 
 # Missing docstrings on class

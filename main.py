@@ -53,7 +53,9 @@ class QualityGatePipeline:
                 )
                 return 0
 
-            console.print(f"[green]✓[/green] Found {len(enabled_checks)} enabled checks")
+            console.print(
+                f"[green]✓[/green] Found {len(enabled_checks)} enabled checks"
+            )
 
             # Run checks
             if self.config.parallel:
@@ -87,13 +89,14 @@ class QualityGatePipeline:
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Convert exceptions to failed results
-        final_results = []
+        final_results: List[CheckResult] = []
         for i, result in enumerate(results):
             check_name = list(checks.keys())[i]
             if isinstance(result, Exception):
                 final_results.append(CheckResult(check_name, False, error=str(result)))
             else:
-                final_results.append(result)
+                # MyPy should understand this is CheckResult from return_exceptions=True
+                final_results.append(result)  # type: ignore[arg-type]
 
         return final_results
 
@@ -122,7 +125,11 @@ class QualityGatePipeline:
         return results
 
     async def _run_check(
-        self, client: Client, source: Directory, check_name: str, check_config: CheckConfig
+        self,
+        client: Client,
+        source: Directory,
+        check_name: str,
+        check_config: CheckConfig,
     ) -> CheckResult:
         """Run a single check."""
         # Don't use status in parallel mode to avoid conflicts
@@ -144,12 +151,16 @@ class QualityGatePipeline:
             elif check_name in ["bandit", "semgrep", "safety"]:
                 from checks.security import run_security_check
 
-                return await run_security_check(client, source, check_name, check_config)
+                return await run_security_check(
+                    client, source, check_name, check_config
+                )
 
             elif check_name in ["terraform", "tflint"]:
                 from checks.terraform import run_terraform_check
 
-                return await run_terraform_check(client, source, check_name, check_config)
+                return await run_terraform_check(
+                    client, source, check_name, check_config
+                )
 
             elif check_name == "gitleaks":
                 from checks.secrets import run_gitleaks_check
@@ -157,10 +168,14 @@ class QualityGatePipeline:
                 return await run_gitleaks_check(client, source, check_config)
 
             else:
-                return CheckResult(check_name, False, error=f"Unknown check: {check_name}")
+                return CheckResult(
+                    check_name, False, error=f"Unknown check: {check_name}"
+                )
 
         except Exception as e:
-            return CheckResult(check_name, False, error=f"Error running check: {str(e)}")
+            return CheckResult(
+                check_name, False, error=f"Error running check: {str(e)}"
+            )
 
     def _display_results(self, results: List[CheckResult]):
         """Display check results in a table."""
@@ -174,7 +189,11 @@ class QualityGatePipeline:
             details = result.error if result.error else "OK"
 
             if self.config.verbose and result.output:
-                details = result.output[:100] + "..." if len(result.output) > 100 else result.output
+                details = (
+                    result.output[:100] + "..."
+                    if len(result.output) > 100
+                    else result.output
+                )
 
             table.add_row(result.name, status, details)
 
@@ -199,6 +218,7 @@ async def main():
 def run():
     """Synchronous entry point for console script."""
     anyio.run(main)
+
 
 if __name__ == "__main__":
     run()

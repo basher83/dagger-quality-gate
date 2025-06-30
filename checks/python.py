@@ -12,6 +12,9 @@ async def run_python_check(
     """Run Python quality checks."""
     try:
         # Create base Python container
+        if not config.container_image:
+            raise ValueError(f"No container image specified for {check_name}")
+
         container = (
             client.container()
             .from_(config.container_image)
@@ -29,10 +32,14 @@ async def run_python_check(
         elif check_name == "black":
             return await _run_black(container, config)
         else:
-            return CheckResult(check_name, False, error=f"Unknown Python check: {check_name}")
+            return CheckResult(
+                check_name, False, error=f"Unknown Python check: {check_name}"
+            )
 
     except Exception as e:
-        return CheckResult(check_name, False, error=f"Failed to run {check_name}: {str(e)}")
+        return CheckResult(
+            check_name, False, error=f"Failed to run {check_name}: {str(e)}"
+        )
 
 
 async def _run_ruff(container, config: CheckConfig) -> CheckResult:
@@ -57,7 +64,9 @@ async def _run_ruff(container, config: CheckConfig) -> CheckResult:
             # Get stderr for error details
             stderr = await container.with_exec(cmd).stderr()
             stdout = await container.with_exec(cmd).stdout()
-            return CheckResult("ruff", False, output=stdout, error=stderr or "Ruff check failed")
+            return CheckResult(
+                "ruff", False, output=stdout, error=stderr or "Ruff check failed"
+            )
 
     except Exception as e:
         return CheckResult("ruff", False, error=str(e))
@@ -86,7 +95,10 @@ async def _run_mypy(container, config: CheckConfig) -> CheckResult:
             stdout = await container.with_exec(cmd).stdout()
             stderr = await container.with_exec(cmd).stderr()
             return CheckResult(
-                "mypy", False, output=stdout, error=stderr or stdout or "MyPy check failed"
+                "mypy",
+                False,
+                output=stdout,
+                error=stderr or stdout or "MyPy check failed",
             )
 
     except Exception as e:
@@ -140,7 +152,9 @@ async def _run_black(container, config: CheckConfig) -> CheckResult:
         try:
             output = await result.stdout()
             await result.exit_code()  # Will raise if non-zero
-            return CheckResult("black", True, output=output or "All files are properly formatted")
+            return CheckResult(
+                "black", True, output=output or "All files are properly formatted"
+            )
         except Exception:
             # Get output for error details
             stdout = await container.with_exec(cmd).stdout()
