@@ -200,6 +200,5 @@ def run():
     """Synchronous entry point for console script."""
     anyio.run(main)
 
-
 if __name__ == "__main__":
     run()
