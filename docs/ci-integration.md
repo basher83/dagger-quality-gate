@@ -280,7 +280,7 @@ steps:
     VERBOSE: true
 ```
 
-## Best Practices
+## Configuration Best Practices
 
 ### 1. Fail Fast in CI
 
@@ -306,6 +306,7 @@ env:
 ### 3. Cache Dependencies
 
 Always cache uv dependencies for faster builds:
+
 - GitHub Actions: Use `actions/cache@v3`
 - GitLab: Use cache with `UV_CACHE_DIR`
 - CircleCI: Use `restore_cache` and `save_cache`
@@ -339,6 +340,50 @@ Run different checks based on file changes:
     ENABLE_MARKDOWN: 'false'
     ENABLE_TERRAFORM: 'false'
 ```
+
+## Container Security Scanning
+
+The project includes an example workflow job for scanning container images used by the pipeline:
+
+```yaml
+container-security:
+  runs-on: ubuntu-latest
+  steps:
+    - name: Scan container images with Trivy
+      run: |
+        # Install Trivy with modern GPG key handling
+        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | \
+          sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+        echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | \
+          sudo tee /etc/apt/sources.list.d/trivy.list
+        sudo apt-get update && sudo apt-get install trivy
+        
+        # Scan image
+        trivy image --severity HIGH,CRITICAL python:3.11-slim
+```
+
+This complements the digest pinning provided by Renovate by actively scanning for vulnerabilities in the base images.
+
+### Alternative: Using Grype
+
+```yaml
+- name: Scan with Grype
+  uses: anchore/scan-action@v3
+  with:
+    image: python:3.11-slim
+    fail-build: true
+    severity-cutoff: high
+```
+
+## CI/CD Best Practices
+
+1. **Use environment variables** for configuration
+2. **Pin tool versions** in CI for reproducibility
+3. **Cache dependencies** to speed up builds
+4. **Run in parallel** when possible
+5. **Set appropriate timeouts** for long-running checks
+6. **Scan container images** for vulnerabilities using Trivy or Grype
+7. **Use digest pinning** for all container images (automated by Renovate)
 
 ## Troubleshooting CI Issues
 

@@ -10,9 +10,11 @@ def prepare_python_container_with_uv(container: Container) -> Container:
             [
                 "sh",
                 "-c",
+                "set -euo pipefail && "
                 "apt-get -qq update && "
                 "apt-get -y --no-install-recommends install curl && "
                 "curl -LsSf https://astral.sh/uv/install.sh | sh && "
+                "apt-get clean && "
                 "rm -rf /var/lib/apt/lists/*",
             ]
         )

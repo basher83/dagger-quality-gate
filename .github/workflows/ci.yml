@@ -78,3 +78,46 @@ jobs:
         ENABLE_SAFETY: 'true'
         ENABLE_TERRAFORM: 'false'
         ENABLE_GITLEAKS: 'false'
+
+  # Example of container vulnerability scanning
+  container-security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Extract container images from config
+      id: extract-images
+      run: |
+        # Extract unique container images from Python files
+        grep -h "container_image=" checks/*.py config.py | \
+          sed -n 's/.*container_image="\([^"]*\)".*/\1/p' | \
+          sort -u > images.txt
+        echo "Found container images:"
+        cat images.txt
+    
+    - name: Scan container images with Trivy
+      run: |
+        # Install Trivy (using modern GPG key handling)
+        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+        echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
+        sudo apt-get update
+        sudo apt-get install trivy
+        
+        # Check if any images were found
+        if [ ! -s images.txt ]; then
+          echo "No container images found to scan"
+          exit 0
+        fi
+        
+        # Scan each image
+        exit_code=0
+        while IFS= read -r image; do
+          echo "Scanning $image..."
+          if ! trivy image --severity HIGH,CRITICAL "$image"; then
+            exit_code=1
+          fi
+        done < images.txt
+        
+        exit $exit_code

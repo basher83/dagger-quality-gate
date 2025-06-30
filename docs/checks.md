@@ -46,6 +46,8 @@ Checks for:
 - Common bugs and anti-patterns
 - Security issues
 
+**Pipeline Command**: `ruff check .`
+
 **Configuration**: Create `.ruff.toml` or `pyproject.toml`:
 ```toml
 [tool.ruff]
@@ -56,7 +58,7 @@ target-version = "py310"
 ### black
 
 **Tool**: [Black](https://github.com/psf/black)  
-**Installation**: `uv pip install black`  
+**Installation**: `uv pip install --system black`  
 **Purpose**: The uncompromising Python code formatter
 
 Checks for:
@@ -64,6 +66,8 @@ Checks for:
 - PEP 8 compliance (with sensible defaults)
 - Consistent string quotes
 - Line length (default 88 characters)
+
+**Pipeline Command**: `black --check --diff .`
 
 **Configuration**: Create `pyproject.toml`:
 ```toml
@@ -74,7 +78,8 @@ include = '\.pyi?$'
 ```
 
 **Usage Notes**:
-- Runs in check mode (`--check --diff`) in the pipeline
+- Runs in check mode to verify formatting without making changes
+- Shows diff of what would be changed
 - To auto-format locally: `black .`
 - Deterministic: same input always produces same output
 - Minimal configuration by design
@@ -90,6 +95,8 @@ Checks for:
 - Missing type hints
 - Type compatibility
 - Return type consistency
+
+**Pipeline Command**: `mypy .`
 
 **Configuration**: Create `mypy.ini` or use `pyproject.toml`:
 ```toml
@@ -108,6 +115,23 @@ Checks for:
 - Type safety
 - Type inference
 - Compatibility with Python typing features
+
+**Pipeline Command**: `ty check .`
+
+**Usage Notes**:
+- Experimental tool by Astral (makers of Ruff)
+- Installed at `/root/.local/share/uv/tools/ty/bin/ty`
+- Currently in early development, expect changes
+- No configuration file support yet
+
+**Local Testing**:
+```bash
+# Install Ty
+uv tool install ty
+
+# Run the same check as the pipeline
+ty check .
+```
 
 ## Security Checks
 

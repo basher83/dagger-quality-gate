@@ -48,14 +48,20 @@ All checks are **enabled by default**. To disable specific checks, set their env
 ### Examples
 
 ```bash
-# Run only Python checks
+# Run only Python checks (disable non-Python checks)
 ENABLE_MARKDOWN=false ENABLE_TERRAFORM=false ENABLE_TFLINT=false ENABLE_GITLEAKS=false uv run python main.py
+
+# Disable Black formatting check (it's enabled by default)
+ENABLE_BLACK=false uv run python main.py
 
 # Disable type checking
 ENABLE_MYPY=false ENABLE_TY=false uv run python main.py
 
-# Run only security checks
-ENABLE_MARKDOWN=false ENABLE_RUFF=false ENABLE_MYPY=false ENABLE_TY=false ENABLE_TERRAFORM=false ENABLE_TFLINT=false uv run python main.py
+# Run only security checks (disable all non-security checks)
+ENABLE_MARKDOWN=false ENABLE_RUFF=false ENABLE_BLACK=false ENABLE_MYPY=false ENABLE_TY=false ENABLE_TERRAFORM=false ENABLE_TFLINT=false uv run python main.py
+
+# Run only Black check (disable all others)
+ENABLE_MARKDOWN=false ENABLE_RUFF=false ENABLE_MYPY=false ENABLE_TY=false ENABLE_BANDIT=false ENABLE_SEMGREP=false ENABLE_SAFETY=false ENABLE_TERRAFORM=false ENABLE_TFLINT=false ENABLE_GITLEAKS=false uv run python main.py
 ```
 
 ### Custom Container Images

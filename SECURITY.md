@@ -35,7 +35,11 @@ We take the security of the Dagger Quality Gate pipeline seriously. If you disco
 
 When using this pipeline:
 
-1. **Container Images**: Pin images by **digest (`sha256:...`)** or immutable tags to prevent supply-chain attacks. This project uses Renovate to automatically pin and update container digests.
+1. **Container Images**: 
+   - Pin images by **digest (`sha256:...`)** or immutable tags to prevent supply-chain attacks
+   - This project uses Renovate to automatically pin and update container digests
+   - Scan container images for vulnerabilities using tools like **Trivy** or **Grype** in CI/CD pipelines
+   - Container layers are optimized to reduce attack surface
 2. **Environment Variables**: Never commit sensitive values; use secrets management
 3. **Dependencies**: Regularly update the pipeline to get the latest security fixes
 4. **Permissions**: Run with minimal required permissions
