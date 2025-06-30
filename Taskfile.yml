@@ -30,25 +30,175 @@ tasks:
     cmds:
       - VERBOSE=true {{.PYTHON}} main.py {{.EXAMPLE_DIR}}
 
-  test:python:
-    desc: Test only Python checks on example repository
+  # Individual check tasks
+  test:black:
+    desc: Test only Black formatter
     env:
+      ENABLE_BLACK: 'true'
+      ENABLE_RUFF: 'false'
+      ENABLE_MYPY: 'false'
+      ENABLE_TY: 'false'
+      ENABLE_BANDIT: 'false'
+      ENABLE_SEMGREP: 'false'
+      ENABLE_SAFETY: 'false'
       ENABLE_MARKDOWN: 'false'
       ENABLE_TERRAFORM: 'false'
+      ENABLE_TFLINT: 'false'
       ENABLE_GITLEAKS: 'false'
+    cmds:
+      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+
+  test:ruff:
+    desc: Test only Ruff linter
+    env:
+      ENABLE_BLACK: 'false'
+      ENABLE_RUFF: 'true'
+      ENABLE_MYPY: 'false'
+      ENABLE_TY: 'false'
+      ENABLE_BANDIT: 'false'
       ENABLE_SEMGREP: 'false'
+      ENABLE_SAFETY: 'false'
+      ENABLE_MARKDOWN: 'false'
+      ENABLE_TERRAFORM: 'false'
+      ENABLE_TFLINT: 'false'
+      ENABLE_GITLEAKS: 'false'
+    cmds:
+      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+
+  test:mypy:
+    desc: Test only MyPy type checker
+    env:
+      ENABLE_BLACK: 'false'
+      ENABLE_RUFF: 'false'
+      ENABLE_MYPY: 'true'
+      ENABLE_TY: 'false'
+      ENABLE_BANDIT: 'false'
+      ENABLE_SEMGREP: 'false'
+      ENABLE_SAFETY: 'false'
+      ENABLE_MARKDOWN: 'false'
+      ENABLE_TERRAFORM: 'false'
+      ENABLE_TFLINT: 'false'
+      ENABLE_GITLEAKS: 'false'
+    cmds:
+      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+
+  test:markdown:
+    desc: Test only Markdown linting
+    env:
+      ENABLE_BLACK: 'false'
+      ENABLE_RUFF: 'false'
+      ENABLE_MYPY: 'false'
+      ENABLE_TY: 'false'
+      ENABLE_BANDIT: 'false'
+      ENABLE_SEMGREP: 'false'
+      ENABLE_SAFETY: 'false'
+      ENABLE_MARKDOWN: 'true'
+      ENABLE_TERRAFORM: 'false'
+      ENABLE_TFLINT: 'false'
+      ENABLE_GITLEAKS: 'false'
+    cmds:
+      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+
+  test:secrets:
+    desc: Test only Gitleaks secrets scanning
+    env:
+      ENABLE_BLACK: 'false'
+      ENABLE_RUFF: 'false'
+      ENABLE_MYPY: 'false'
+      ENABLE_TY: 'false'
+      ENABLE_BANDIT: 'false'
+      ENABLE_SEMGREP: 'false'
+      ENABLE_SAFETY: 'false'
+      ENABLE_MARKDOWN: 'false'
+      ENABLE_TERRAFORM: 'false'
+      ENABLE_TFLINT: 'false'
+      ENABLE_GITLEAKS: 'true'
+    cmds:
+      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+
+  test:bandit:
+    desc: Test only Bandit security scanner
+    env:
+      ENABLE_BLACK: 'false'
+      ENABLE_RUFF: 'false'
+      ENABLE_MYPY: 'false'
+      ENABLE_TY: 'false'
+      ENABLE_BANDIT: 'true'
+      ENABLE_SEMGREP: 'false'
+      ENABLE_SAFETY: 'false'
+      ENABLE_MARKDOWN: 'false'
+      ENABLE_TERRAFORM: 'false'
+      ENABLE_TFLINT: 'false'
+      ENABLE_GITLEAKS: 'false'
+    cmds:
+      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+
+  # Combination tasks
+  test:python:
+    desc: Test all Python checks (Black, Ruff, MyPy, Ty)
+    env:
+      ENABLE_BLACK: 'true'
+      ENABLE_RUFF: 'true'
+      ENABLE_MYPY: 'true'
+      ENABLE_TY: 'true'
+      ENABLE_BANDIT: 'false'
+      ENABLE_SEMGREP: 'false'
+      ENABLE_SAFETY: 'false'
+      ENABLE_MARKDOWN: 'false'
+      ENABLE_TERRAFORM: 'false'
+      ENABLE_TFLINT: 'false'
+      ENABLE_GITLEAKS: 'false'
     cmds:
       - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
 
   test:security:
-    desc: Test only security checks on example repository
+    desc: Test all security checks (Bandit, Semgrep, Safety, Gitleaks)
     env:
-      ENABLE_MARKDOWN: 'false'
+      ENABLE_BLACK: 'false'
       ENABLE_RUFF: 'false'
       ENABLE_MYPY: 'false'
       ENABLE_TY: 'false'
+      ENABLE_BANDIT: 'true'
+      ENABLE_SEMGREP: 'true'
+      ENABLE_SAFETY: 'true'
+      ENABLE_MARKDOWN: 'false'
       ENABLE_TERRAFORM: 'false'
       ENABLE_TFLINT: 'false'
+      ENABLE_GITLEAKS: 'true'
+    cmds:
+      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+
+  test:terraform:
+    desc: Test Terraform checks (fmt and tflint)
+    env:
+      ENABLE_BLACK: 'false'
+      ENABLE_RUFF: 'false'
+      ENABLE_MYPY: 'false'
+      ENABLE_TY: 'false'
+      ENABLE_BANDIT: 'false'
+      ENABLE_SEMGREP: 'false'
+      ENABLE_SAFETY: 'false'
+      ENABLE_MARKDOWN: 'false'
+      ENABLE_TERRAFORM: 'true'
+      ENABLE_TFLINT: 'true'
+      ENABLE_GITLEAKS: 'false'
+    cmds:
+      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+
+  test:fast:
+    desc: Test fast checks only (exclude slow security scanners)
+    env:
+      ENABLE_BLACK: 'true'
+      ENABLE_RUFF: 'true'
+      ENABLE_MYPY: 'true'
+      ENABLE_TY: 'false'
+      ENABLE_BANDIT: 'false'
+      ENABLE_SEMGREP: 'false'
+      ENABLE_SAFETY: 'false'
+      ENABLE_MARKDOWN: 'true'
+      ENABLE_TERRAFORM: 'true'
+      ENABLE_TFLINT: 'false'
+      ENABLE_GITLEAKS: 'false'
     cmds:
       - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
 
@@ -77,6 +227,64 @@ tasks:
       - rm -rf .pytest_cache/
       - find . -type d -name "__pycache__" -exec rm -rf {} +
       - find . -type f -name "*.pyc" -delete
+
+  # Run checks on current project
+  check:
+    desc: Run all checks on current project
+    cmds:
+      - '{{.PYTHON}} main.py .'
+
+  check:python:
+    desc: Run Python checks on current project
+    env:
+      ENABLE_BLACK: 'true'
+      ENABLE_RUFF: 'true'
+      ENABLE_MYPY: 'true'
+      ENABLE_TY: 'true'
+      ENABLE_BANDIT: 'false'
+      ENABLE_SEMGREP: 'false'
+      ENABLE_SAFETY: 'false'
+      ENABLE_MARKDOWN: 'false'
+      ENABLE_TERRAFORM: 'false'
+      ENABLE_TFLINT: 'false'
+      ENABLE_GITLEAKS: 'false'
+    cmds:
+      - '{{.PYTHON}} main.py .'
+
+  check:security:
+    desc: Run security checks on current project
+    env:
+      ENABLE_BLACK: 'false'
+      ENABLE_RUFF: 'false'
+      ENABLE_MYPY: 'false'
+      ENABLE_TY: 'false'
+      ENABLE_BANDIT: 'true'
+      ENABLE_SEMGREP: 'true'
+      ENABLE_SAFETY: 'true'
+      ENABLE_MARKDOWN: 'false'
+      ENABLE_TERRAFORM: 'false'
+      ENABLE_TFLINT: 'false'
+      ENABLE_GITLEAKS: 'true'
+    cmds:
+      - '{{.PYTHON}} main.py .'
+
+  check:fast:
+    desc: Run fast checks on current project
+    env:
+      ENABLE_BLACK: 'true'
+      ENABLE_RUFF: 'true'
+      ENABLE_MYPY: 'true'
+      ENABLE_TY: 'false'
+      ENABLE_BANDIT: 'false'
+      ENABLE_SEMGREP: 'false'
+      ENABLE_SAFETY: 'false'
+      ENABLE_MARKDOWN: 'true'
+      ENABLE_TERRAFORM: 'false'
+      ENABLE_TFLINT: 'false'
+      ENABLE_GITLEAKS: 'false'
+      PARALLEL: 'false'
+    cmds:
+      - '{{.PYTHON}} main.py .'
 
   dev:
     desc: Run pipeline on current directory with all checks
