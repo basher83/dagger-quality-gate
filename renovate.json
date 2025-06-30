@@ -1,6 +1,54 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
-  ]
+    "config:recommended",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "packageRules": [
+    {
+      "description": "Group Python updates",
+      "matchPackagePatterns": [
+        "*"
+      ],
+      "matchDatasources": [
+        "pypi"
+      ],
+      "groupName": "python dependencies"
+    },
+    {
+      "description": "Automerge patch updates for development tools",
+      "matchDatasources": [
+        "pypi"
+      ],
+      "matchPackageNames": [
+        "ruff",
+        "mypy",
+        "pytest",
+        "black"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "automerge": true
+    },
+    {
+      "description": "Ignore example repository",
+      "matchPaths": [
+        "examples/sample-repo/**"
+      ],
+      "enabled": false
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": [
+      "security"
+    ],
+    "assignees": [
+      "basher83"
+    ]
+  },
+  "prConcurrentLimit": 10,
+  "prCreation": "not-pending",
+  "semanticCommits": "enabled"
 }

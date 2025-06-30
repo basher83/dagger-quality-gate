@@ -279,6 +279,33 @@ For faster execution:
 - Use Dagger's cache mounts
 - Pre-build common base images
 
+## Dependency Management
+
+### Renovate Configuration
+
+This project uses Renovate for automated dependency updates with security-focused settings:
+
+- **Container Digest Pinning**: All Docker images are automatically pinned to their SHA256 digests
+- **GitHub Actions Pinning**: Actions are pinned to commit SHAs for security
+- **Grouped Updates**: Python dependencies are grouped to reduce PR noise
+- **Security Alerts**: Vulnerability alerts are labeled and assigned
+- **Example Repository Exclusion**: The `examples/sample-repo/` is ignored (intentional vulnerabilities)
+
+See `renovate.json` for the full configuration. Renovate will:
+1. Create PRs to pin all container images to digests
+2. Update those digests when new versions are available
+3. Alert on security vulnerabilities
+4. Group related updates together
+
+### Dependabot Configuration
+
+Dependabot is configured to:
+- Monitor Python dependencies weekly
+- Ignore the example repository
+- Monitor GitHub Actions for updates
+
+See `.github/dependabot.yml` for configuration.
+
 ## Getting Help
 
 - Check existing issues on GitHub
