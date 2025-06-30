@@ -3,6 +3,9 @@ name: Quality Gate CI
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   quality-gate:
     runs-on: ubuntu-latest
