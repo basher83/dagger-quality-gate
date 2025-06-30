@@ -4,10 +4,22 @@ A universal, reusable Dagger pipeline for running quality checks across any repo
 
 ## 🚀 Quick Start
 
+### Option 1: Run directly with uvx (Recommended)
+
 ```bash
-# Install uv (Python package manager)
+# Install uv if you haven't already
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
+# Run quality checks on any project
+uvx --from git+https://github.com/basher83/dagger-quality-gate quality-gate /path/to/your/project
+
+# Or run on current directory
+uvx --from git+https://github.com/basher83/dagger-quality-gate quality-gate
+```
+
+### Option 2: Clone and install locally
+
+```bash
 # Clone and setup
 git clone https://github.com/basher83/dagger-quality-gate.git
 cd dagger-quality-gate
@@ -49,13 +61,17 @@ See [Available Checks](docs/checks.md) for detailed information.
 ## 🎯 Basic Usage
 
 ```bash
-# Run all checks (default)
-uv run python main.py
+# Run all checks with uvx (no installation needed)
+uvx --from git+https://github.com/basher83/dagger-quality-gate quality-gate
 
 # Run specific checks only
-ENABLE_RUFF=true ENABLE_BLACK=true ENABLE_MYPY=true ENABLE_TY=true uv run python main.py
+ENABLE_RUFF=true ENABLE_BLACK=true ENABLE_MYPY=true ENABLE_TY=true \
+  uvx --from git+https://github.com/basher83/dagger-quality-gate quality-gate
 
-# Run with Task (if installed)
+# If installed locally:
+uv run python main.py
+
+# Run with Task (if installed locally)
 task test              # Test on example repo
 task run              # Run on current directory
 task test:python      # Test only Python checks
@@ -79,8 +95,14 @@ See [Configuration Guide](docs/configuration.md) for all options.
 ## 🐳 CI/CD Integration
 
 ```yaml
-# GitHub Actions
+# GitHub Actions - Option 1: Direct execution with uvx
+- name: Setup uv
+  uses: astral-sh/setup-uv@v3
 - name: Run Quality Gate
+  run: uvx --from git+https://github.com/basher83/dagger-quality-gate quality-gate
+
+# GitHub Actions - Option 2: Local installation
+- name: Setup and run
   uses: astral-sh/setup-uv@v3
 - run: |
     uv sync
