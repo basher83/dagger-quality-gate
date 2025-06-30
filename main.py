@@ -196,5 +196,10 @@ async def main():
     sys.exit(exit_code)
 
 
-if __name__ == "__main__":
+def run():
+    """Synchronous entry point for console script."""
     anyio.run(main)
+
+
+if __name__ == "__main__":
+    run()

@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-quality-gate = "main:main"
+quality-gate = "main:run"
 
 [build-system]
 requires = ["hatchling"]
