@@ -1,0 +1,97 @@
+version: '3'
+
+vars:
+  PYTHON: uv run python
+  EXAMPLE_DIR: examples/sample-repo
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  install:
+    desc: Install dependencies with uv
+    cmds:
+      - uv sync
+
+  run:
+    desc: Run quality gate pipeline on current directory
+    cmds:
+      - '{{.PYTHON}} main.py {{.CLI_ARGS}}'
+
+  test:
+    desc: Run pipeline on example repository (should show failures)
+    cmds:
+      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+
+  test:verbose:
+    desc: Run pipeline on example repository with verbose output
+    cmds:
+      - VERBOSE=true {{.PYTHON}} main.py {{.EXAMPLE_DIR}}
+
+  test:python:
+    desc: Test only Python checks on example repository
+    env:
+      ENABLE_MARKDOWN: 'false'
+      ENABLE_TERRAFORM: 'false'
+      ENABLE_GITLEAKS: 'false'
+      ENABLE_SEMGREP: 'false'
+    cmds:
+      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+
+  test:security:
+    desc: Test only security checks on example repository
+    env:
+      ENABLE_MARKDOWN: 'false'
+      ENABLE_RUFF: 'false'
+      ENABLE_MYPY: 'false'
+      ENABLE_TY: 'false'
+      ENABLE_TERRAFORM: 'false'
+      ENABLE_TFLINT: 'false'
+    cmds:
+      - '{{.PYTHON}} main.py {{.EXAMPLE_DIR}}'
+
+  lint:
+    desc: Run linters on this project
+    cmds:
+      - '{{.PYTHON}} -m ruff check .'
+      - '{{.PYTHON}} -m mypy . --ignore-missing-imports'
+
+  lint:fix:
+    desc: Run linters with auto-fix
+    cmds:
+      - '{{.PYTHON}} -m ruff check . --fix'
+
+  format:
+    desc: Format code with ruff
+    cmds:
+      - '{{.PYTHON}} -m ruff format .'
+
+  clean:
+    desc: Clean up generated files
+    cmds:
+      - rm -rf .ruff_cache/
+      - rm -rf .mypy_cache/
+      - rm -rf __pycache__/
+      - rm -rf .pytest_cache/
+      - find . -type d -name "__pycache__" -exec rm -rf {} +
+      - find . -type f -name "*.pyc" -delete
+
+  dev:
+    desc: Run pipeline on current directory with all checks
+    cmds:
+      - '{{.PYTHON}} main.py .'
+
+  dev:watch:
+    desc: Watch for changes and run pipeline
+    cmds:
+      - echo "Watching for changes... Press Ctrl+C to stop"
+      - watch -n 5 {{.PYTHON}} main.py {{.CLI_ARGS}}
+
+  ci:
+    desc: Simulate CI run
+    cmds:
+      - task: install
+      - task: lint
+      - task: test

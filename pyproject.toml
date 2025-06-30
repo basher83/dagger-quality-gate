@@ -1,0 +1,50 @@
+[project]
+name = "dagger-quality-gate"
+version = "0.1.0"
+description = "Universal Dagger pipeline for running quality checks across any repository"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "basher83"},
+]
+
+dependencies = [
+    "dagger-io>=0.9.0",
+    "anyio>=4.0.0",
+    "rich>=13.0.0",
+    "pydantic>=2.0.0",
+    "typing-extensions>=4.0.0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.34.0",
+]
+
+[project.scripts]
+quality-gate = "main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["checks", "config.py", "main.py"]
+
+[tool.uv]
+dev-dependencies = [
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "pytest>=7.0.0",
+]
+
+[[tool.uv.index]]
+name = "safety"
+url = "https://pkgs.safetycli.com/repository/the-mothership/project/dagger-quality-gate/pypi/simple/"
+default = false
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

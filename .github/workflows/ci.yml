@@ -1,0 +1,76 @@
+name: Quality Gate CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+    
+    - name: Install dependencies
+      run: uv sync
+    
+    - name: Run Quality Gate Pipeline
+      run: |
+        uv run python main.py
+      env:
+        # Enable specific checks (all enabled by default)
+        ENABLE_MARKDOWN: 'true'
+        ENABLE_RUFF: 'true'
+        ENABLE_MYPY: 'true'
+        ENABLE_BANDIT: 'true'
+        ENABLE_SAFETY: 'true'
+        ENABLE_TERRAFORM: 'true'
+        ENABLE_GITLEAKS: 'true'
+        # Optional: Run checks sequentially
+        # PARALLEL: 'false'
+        # Optional: Continue on failure
+        # FAIL_FAST: 'false'
+
+  # Example of running only specific checks
+  python-checks-only:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+    
+    - name: Install dependencies
+      run: uv sync
+    
+    - name: Run Python Checks Only
+      run: |
+        uv run python main.py
+      env:
+        # Disable all checks except Python
+        ENABLE_MARKDOWN: 'false'
+        ENABLE_RUFF: 'true'
+        ENABLE_MYPY: 'true'
+        ENABLE_BANDIT: 'true'
+        ENABLE_SAFETY: 'true'
+        ENABLE_TERRAFORM: 'false'
+        ENABLE_GITLEAKS: 'false'
