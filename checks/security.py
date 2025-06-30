@@ -3,14 +3,11 @@
 from dagger import Client, Directory
 from config import CheckConfig
 from main import CheckResult
-from .base import prepare_python_container_with_uv, get_uv_tool_path
+from .base import prepare_python_container_with_uv
 
 
 async def run_security_check(
-    client: Client,
-    source: Directory,
-    check_name: str,
-    config: CheckConfig
+    client: Client, source: Directory, check_name: str, config: CheckConfig
 ) -> CheckResult:
     """Run security scanning checks."""
     try:
@@ -21,18 +18,10 @@ async def run_security_check(
         elif check_name == "safety":
             return await _run_safety(client, source, config)
         else:
-            return CheckResult(
-                check_name,
-                False,
-                error=f"Unknown security check: {check_name}"
-            )
-    
+            return CheckResult(check_name, False, error=f"Unknown security check: {check_name}")
+
     except Exception as e:
-        return CheckResult(
-            check_name,
-            False,
-            error=f"Failed to run {check_name}: {str(e)}"
-        )
+        return CheckResult(check_name, False, error=f"Failed to run {check_name}: {str(e)}")
 
 
 async def _run_bandit(client: Client, source: Directory, config: CheckConfig) -> CheckResult:
@@ -47,14 +36,14 @@ async def _run_bandit(client: Client, source: Directory, config: CheckConfig) ->
         )
         container = prepare_python_container_with_uv(container)
         container = container.with_exec(["uv", "pip", "install", "--system", "bandit[toml]"])
-        
+
         # Build command
         cmd = ["bandit", "-r", "."]
         cmd.extend(config.additional_args)
-        
+
         # Run bandit
         result = await container.with_exec(cmd).sync()
-        
+
         try:
             output = await result.stdout()
             await result.exit_code()  # Will raise if non-zero
@@ -64,12 +53,9 @@ async def _run_bandit(client: Client, source: Directory, config: CheckConfig) ->
             stdout = await container.with_exec(cmd).stdout()
             stderr = await container.with_exec(cmd).stderr()
             return CheckResult(
-                "bandit",
-                False,
-                output=stdout,
-                error=stderr or "Bandit found security issues"
+                "bandit", False, output=stdout, error=stderr or "Bandit found security issues"
             )
-    
+
     except Exception as e:
         return CheckResult("bandit", False, error=str(e))
 
@@ -84,14 +70,14 @@ async def _run_semgrep(client: Client, source: Directory, config: CheckConfig) -
             .with_mounted_directory("/src", source)
             .with_workdir("/src")
         )
-        
+
         # Build command - use auto config by default
         cmd = ["semgrep", "--config=auto"]
         cmd.extend(config.additional_args)
-        
+
         # Run semgrep
         result = await container.with_exec(cmd).sync()
-        
+
         try:
             output = await result.stdout()
             await result.exit_code()  # Will raise if non-zero
@@ -101,12 +87,9 @@ async def _run_semgrep(client: Client, source: Directory, config: CheckConfig) -
             stdout = await container.with_exec(cmd).stdout()
             stderr = await container.with_exec(cmd).stderr()
             return CheckResult(
-                "semgrep",
-                False,
-                output=stdout,
-                error=stderr or "Semgrep found security issues"
+                "semgrep", False, output=stdout, error=stderr or "Semgrep found security issues"
             )
-    
+
     except Exception as e:
         return CheckResult("semgrep", False, error=str(e))
 
@@ -123,10 +106,10 @@ async def _run_safety(client: Client, source: Directory, config: CheckConfig) ->
         )
         container = prepare_python_container_with_uv(container)
         container = container.with_exec(["uv", "pip", "install", "--system", "safety"])
-        
+
         # Build command - use new scan command
         cmd = ["safety", "scan"]
-        
+
         # Check if requirements.txt exists
         try:
             await container.with_exec(["test", "-f", "requirements.txt"]).sync()
@@ -135,12 +118,12 @@ async def _run_safety(client: Client, source: Directory, config: CheckConfig) ->
         except Exception:
             # No requirements.txt, safety will scan the current directory
             pass
-        
+
         cmd.extend(config.additional_args)
-        
+
         # Run safety
         result = await container.with_exec(cmd).sync()
-        
+
         try:
             output = await result.stdout()
             await result.exit_code()  # Will raise if non-zero
@@ -153,8 +136,8 @@ async def _run_safety(client: Client, source: Directory, config: CheckConfig) ->
                 "safety",
                 False,
                 output=stdout,
-                error=stderr or stdout or "Safety found vulnerabilities"
+                error=stderr or stdout or "Safety found vulnerabilities",
             )
-    
+
     except Exception as e:
         return CheckResult("safety", False, error=str(e))

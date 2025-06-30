@@ -18,7 +18,7 @@ uv run python main.py
 uv run python main.py /path/to/project
 
 # Run specific checks only
-ENABLE_RUFF=true ENABLE_MYPY=true uv run python main.py
+ENABLE_RUFF=true ENABLE_BLACK=true ENABLE_MYPY=true ENABLE_TY=true uv run python main.py
 
 # Run with verbose output
 VERBOSE=true uv run python main.py
@@ -66,8 +66,11 @@ uv run python -m mypy . --ignore-missing-imports
 # Auto-fix linting issues
 uv run python -m ruff check . --fix
 
-# Format code
+# Format code with ruff
 uv run python -m ruff format .
+
+# Or format with black (checks formatting in CI)
+uv run python -m black .
 
 # Clean up generated files
 task clean
@@ -110,7 +113,9 @@ rm -rf directory_name
 ```bash
 # Enable/disable specific checks
 export ENABLE_RUFF=true
+export ENABLE_BLACK=true
 export ENABLE_MYPY=true
+export ENABLE_TY=true
 export ENABLE_BANDIT=true
 export ENABLE_SAFETY=true
 export ENABLE_SEMGREP=true

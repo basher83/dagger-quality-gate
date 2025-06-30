@@ -35,6 +35,7 @@ All checks are **enabled by default**. To disable specific checks, set their env
 |-------|---------------------|
 | Markdown Linting | `ENABLE_MARKDOWN` |
 | Python Linting (ruff) | `ENABLE_RUFF` |
+| Python Formatting (black) | `ENABLE_BLACK` |
 | Python Type Checking (mypy) | `ENABLE_MYPY` |
 | Python Type Checking (Ty) | `ENABLE_TY` |
 | Security Scanning (Bandit) | `ENABLE_BANDIT` |

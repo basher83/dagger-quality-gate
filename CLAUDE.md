@@ -49,6 +49,7 @@ dagger-quality-gate/
 - **Markdown**: markdownlint (Node-based)
 - **Python**: 
   - Linting: ruff
+  - Formatting: black
   - Type checking: mypy + Ty (https://github.com/astral-sh/ty)
   - Security: Bandit, semgrep, safety
 - **Terraform**: terraform fmt -check, tflint
@@ -69,7 +70,7 @@ uv sync
 uv run python main.py
 
 # Run with specific checks enabled
-ENABLE_RUFF=true ENABLE_MYPY=true uv run python main.py
+ENABLE_RUFF=true ENABLE_BLACK=true ENABLE_MYPY=true ENABLE_TY=true uv run python main.py
 
 # Run on a specific directory
 uv run python main.py /path/to/project
@@ -100,3 +101,22 @@ The pipeline should work seamlessly with GitHub Actions (and other CI systems):
 - Provide example `.github/workflows/ci.yml`
 - Ensure proper exit codes for CI integration
 - Support both push and pull request triggers
+
+## Python Tools Installation
+
+**IMPORTANT**: Different Python tools require different installation methods with `uv`:
+
+| Tool | Installation Method | Command |
+|------|-------------------|---------|
+| **Black** | uv pip install | `uv pip install --system black` |
+| **Ruff** | uv tool install (preferred) or pip | `uv tool install ruff` |
+| **Ty** | uv tool install | `uv tool install ty` |
+| **Mypy** | uv pip install | `uv pip install --system mypy` |
+| **Bandit** | uv pip install | `uv pip install --system bandit` |
+| **Semgrep** | uv pip install | `uv pip install --system semgrep` |
+| **Safety** | uv pip install | `uv pip install --system safety` |
+
+**Key Implementation Notes**:
+- Tools installed with `uv tool install` are located at: `/root/.local/share/uv/tools/{tool_name}/bin/{tool_name}`
+- Tools installed with `uv pip install --system` are available directly in PATH
+- Always use the correct installation method to avoid runtime errors

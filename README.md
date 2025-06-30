@@ -30,7 +30,7 @@ uv run python main.py /path/to/your/project
 
 | Category | Tools | Purpose |
 |----------|-------|---------|
-| **Python** | ruff, mypy, Ty | Linting, formatting, type checking |
+| **Python** | ruff, black, mypy, Ty | Linting, formatting, type checking |
 | **Security** | Bandit, Semgrep, Safety | Vulnerability and dependency scanning |
 | **Infrastructure** | Terraform fmt, TFLint | Infrastructure code quality |
 | **Documentation** | markdownlint | Markdown formatting and style |
@@ -53,7 +53,7 @@ See [Available Checks](docs/checks.md) for detailed information.
 uv run python main.py
 
 # Run specific checks only
-ENABLE_RUFF=true ENABLE_MYPY=true uv run python main.py
+ENABLE_RUFF=true ENABLE_BLACK=true ENABLE_MYPY=true ENABLE_TY=true uv run python main.py
 
 # Run with Task (if installed)
 task test              # Test on example repo

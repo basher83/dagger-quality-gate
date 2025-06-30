@@ -9,7 +9,7 @@ dagger-quality-gate/
 │   ├── __init__.py
 │   ├── base.py          # Base check interface
 │   ├── markdown.py      # Markdown lint check
-│   ├── python.py        # Python checks (ruff, mypy, Ty)
+│   ├── python.py        # Python checks (ruff, black, mypy, Ty)
 │   ├── security.py      # Security checks (Bandit, Semgrep, Safety)
 │   ├── terraform.py     # Terraform checks (fmt, tflint)
 │   └── secrets.py       # Secret scanning (Gitleaks)
@@ -70,7 +70,7 @@ Each check module implements:
 5. **Rich Output**: Clear, colorful terminal output with tables
 
 ## Supported Checks (MVP)
-- **Python**: ruff, mypy, Ty
+- **Python**: ruff, black, mypy, Ty
 - **Security**: Bandit, Semgrep, Safety
 - **Infrastructure**: Terraform fmt, TFLint
 - **Documentation**: markdownlint

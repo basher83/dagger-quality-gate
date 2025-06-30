@@ -12,7 +12,7 @@ dagger-quality-gate/
 │   ├── __init__.py
 │   ├── base.py          # Base utilities for checks
 │   ├── markdown.py       # Markdown linting
-│   ├── python.py         # Python checks (ruff, mypy, Ty)
+│   ├── python.py         # Python checks (ruff, black, mypy, Ty)
 │   ├── security.py       # Security scans (Bandit, Semgrep, Safety)
 │   ├── terraform.py      # Terraform checks
 │   └── secrets.py        # Secrets scanning

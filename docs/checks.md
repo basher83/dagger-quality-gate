@@ -53,6 +53,32 @@ line-length = 100
 target-version = "py310"
 ```
 
+### black
+
+**Tool**: [Black](https://github.com/psf/black)  
+**Installation**: `uv pip install black`  
+**Purpose**: The uncompromising Python code formatter
+
+Checks for:
+- Code formatting consistency
+- PEP 8 compliance (with sensible defaults)
+- Consistent string quotes
+- Line length (default 88 characters)
+
+**Configuration**: Create `pyproject.toml`:
+```toml
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+```
+
+**Usage Notes**:
+- Runs in check mode (`--check --diff`) in the pipeline
+- To auto-format locally: `black .`
+- Deterministic: same input always produces same output
+- Minimal configuration by design
+
 ### mypy
 
 **Tool**: [mypy](https://github.com/python/mypy)  
