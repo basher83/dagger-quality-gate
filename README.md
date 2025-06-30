@@ -6,9 +6,14 @@ A universal, reusable Dagger pipeline for running quality checks across any repo
 
 ### Option 1: Run directly with uvx (Recommended)
 
+> **Note**: `uvx` requires uv ≥ 0.3.0. The `uvx` command is still experimental but provides the most convenient way to run tools. [See uvx documentation](https://docs.astral.sh/uv/guides/tools/#running-tools).
+
 ```bash
-# Install uv if you haven't already
+# Install uv (≥ 0.3.0) if you haven't already
 curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Check your uv version
+uv --version
 
 # Run quality checks on any project
 uvx --from git+https://github.com/basher83/dagger-quality-gate quality-gate /path/to/your/project
@@ -25,8 +30,11 @@ git clone https://github.com/basher83/dagger-quality-gate.git
 cd dagger-quality-gate
 uv sync
 
-# Run quality checks
+# Run quality checks on a specific project
 uv run python main.py /path/to/your/project
+
+# Or run on current directory
+uv run python main.py
 ```
 
 ## 📋 Features
@@ -61,14 +69,13 @@ See [Available Checks](docs/checks.md) for detailed information.
 ## 🎯 Basic Usage
 
 ```bash
-# Run all checks with uvx (no installation needed)
+# Run all checks with uvx (requires uv ≥ 0.3.0)
 uvx --from git+https://github.com/basher83/dagger-quality-gate quality-gate
 
-# Run specific checks only
-ENABLE_RUFF=true ENABLE_BLACK=true ENABLE_MYPY=true ENABLE_TY=true \
-  uvx --from git+https://github.com/basher83/dagger-quality-gate quality-gate
+# Run specific checks only (single line for portability)
+ENABLE_RUFF=true ENABLE_BLACK=true ENABLE_MYPY=true ENABLE_TY=true uvx --from git+https://github.com/basher83/dagger-quality-gate quality-gate
 
-# If installed locally:
+# If using older uv or prefer local installation:
 uv run python main.py
 
 # Run with Task (if installed locally)
@@ -113,7 +120,7 @@ See [CI/CD Integration Guide](docs/ci-integration.md) for more platforms.
 
 ## 🏗️ Project Structure
 
-```
+```plaintext
 dagger-quality-gate/
 ├── main.py              # Pipeline orchestrator
 ├── config.py            # Configuration management
@@ -126,6 +133,7 @@ dagger-quality-gate/
 ## 🤝 Contributing
 
 Contributions are welcome! See the [Development Guide](docs/development.md) for:
+
 - Adding new quality checks
 - Project architecture
 - Testing guidelines
